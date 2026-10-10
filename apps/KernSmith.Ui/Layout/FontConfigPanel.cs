@@ -163,7 +163,7 @@ public class FontConfigPanel : Panel
                     faceRow.Visible = _fontConfig.IsFontCollection;
                     if (_fontConfig.IsFontCollection)
                     {
-                        faceCombo.Items.Clear();
+                        faceCombo.Items!.Clear();
                         for (int i = 0; i < _fontConfig.FaceCount; i++)
                             faceCombo.Items.Add($"Face {i}");
                         faceCombo.SelectedIndex = 0;
@@ -286,7 +286,7 @@ public class FontConfigPanel : Panel
             _rasterizerCombo.Visual.WidthUnits = DimensionUnitType.RelativeToParent;
             _rasterizerCombo.Visual.Width = 0;
             foreach (var backend in _fontConfig.AvailableBackends)
-                _rasterizerCombo.Items.Add(backend.ToString());
+                _rasterizerCombo.Items!.Add(backend.ToString());
             _rasterizerCombo.SelectedIndex = _fontConfig.AvailableBackends.ToList().IndexOf(_fontConfig.SelectedBackend);
             if (_rasterizerCombo.SelectedIndex < 0) _rasterizerCombo.SelectedIndex = 0;
             _rasterizerCombo.SelectionChanged += (_, _) => OnRasterizerComboSelectionChanged();
@@ -406,7 +406,7 @@ public class FontConfigPanel : Panel
         //maxWidthCombo.VisualTemplate = NoWrapItemTemplate;
         maxWidthCombo.ListBox.InnerPanel.UseFixedStackChildrenSize = true;
         maxWidthCombo.Width = 80;
-        foreach (var s in sizes) maxWidthCombo.Items.Add(s.ToString());
+        foreach (var s in sizes) maxWidthCombo.Items!.Add(s.ToString());
         maxWidthCombo.SelectedIndex = Array.IndexOf(sizes, _atlasConfig.MaxWidth);
         if (maxWidthCombo.SelectedIndex < 0) maxWidthCombo.SelectedIndex = 3; // 1024
         maxWidthCombo.SelectionChanged += (_, _) =>
@@ -424,7 +424,7 @@ public class FontConfigPanel : Panel
         //maxHeightCombo.VisualTemplate = NoWrapItemTemplate;
         maxHeightCombo.ListBox.InnerPanel.UseFixedStackChildrenSize = true;
         maxHeightCombo.Width = 80;
-        foreach (var s in sizes) maxHeightCombo.Items.Add(s.ToString());
+        foreach (var s in sizes) maxHeightCombo.Items!.Add(s.ToString());
         maxHeightCombo.SelectedIndex = Array.IndexOf(sizes, _atlasConfig.MaxHeight);
         if (maxHeightCombo.SelectedIndex < 0) maxHeightCombo.SelectedIndex = 3;
         maxHeightCombo.SelectionChanged += (_, _) =>
@@ -463,7 +463,7 @@ public class FontConfigPanel : Panel
         packAlgoCombo.ListBox.InnerPanel.UseFixedStackChildrenSize = true;
         packAlgoCombo.Visual.WidthUnits = DimensionUnitType.RelativeToParent;
         packAlgoCombo.Visual.Width = 0;
-        packAlgoCombo.Items.Add("MaxRects");
+        packAlgoCombo.Items!.Add("MaxRects");
         packAlgoCombo.Items.Add("Skyline");
         packAlgoCombo.SelectedIndex = _atlasConfig.PackingAlgorithmIndex;
         packAlgoCombo.SelectionChanged += (_, _) =>
@@ -624,7 +624,7 @@ public class FontConfigPanel : Panel
         formatCombo.ListBox.InnerPanel.UseFixedStackChildrenSize = true;
         formatCombo.Visual.WidthUnits = DimensionUnitType.RelativeToParent;
         formatCombo.Visual.Width = 0;
-        foreach (var (name, _) in formats) formatCombo.Items.Add(name);
+        foreach (var (name, _) in formats) formatCombo.Items!.Add(name);
         formatCombo.SelectedIndex = Array.FindIndex(formats, f => f.Item2 == _atlasConfig.DescriptorFormat);
         if (formatCombo.SelectedIndex < 0) formatCombo.SelectedIndex = 0;
         formatCombo.SelectionChanged += (_, _) =>
