@@ -305,7 +305,7 @@ public class EffectsPanel : Panel
         ssCombo.ListBox.InnerPanel.UseFixedStackChildrenSize = true;
         ssCombo.Visual.WidthUnits = DimensionUnitType.RelativeToParent;
         ssCombo.Visual.Width = 0;
-        foreach (var level in ssLevels) ssCombo.Items.Add($"{level}x");
+        foreach (var level in ssLevels) ssCombo.Items!.Add($"{level}x");
         ssCombo.SelectedIndex = 0;
         ssCombo.SelectionChanged += (_, _) =>
         {
