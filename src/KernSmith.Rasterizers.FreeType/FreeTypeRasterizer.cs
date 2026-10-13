@@ -16,6 +16,7 @@ public sealed class FreeTypeRasterizer : IRasterizer
 {
     private static readonly IRasterizerCapabilities FreeTypeCapabilitiesInstance = new FreeTypeCapabilities();
 
+    /// <inheritdoc />
     public IRasterizerCapabilities Capabilities => FreeTypeCapabilitiesInstance;
 
     private FreeTypeLibrary? _library;
@@ -33,6 +34,7 @@ public sealed class FreeTypeRasterizer : IRasterizer
     private int _lastSetDpi;
     private uint _lastSetSdfSpread;
 
+    /// <inheritdoc />
     public unsafe void LoadFont(ReadOnlyMemory<byte> fontData, int faceIndex = 0)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -132,6 +134,7 @@ public sealed class FreeTypeRasterizer : IRasterizer
         }
     }
 
+    /// <inheritdoc />
     public unsafe RasterizedGlyph? RasterizeGlyph(int codepoint, RasterOptions options)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -442,6 +445,7 @@ public sealed class FreeTypeRasterizer : IRasterizer
         }
     }
 
+    /// <inheritdoc />
     public unsafe Font.Models.GlyphMetrics? GetGlyphMetrics(int codepoint, RasterOptions options)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -486,6 +490,7 @@ public sealed class FreeTypeRasterizer : IRasterizer
             Height: F26Dot6ToRounded(metrics.height));
     }
 
+    /// <inheritdoc />
     public IReadOnlyList<RasterizedGlyph> RasterizeAll(IEnumerable<int> codepoints, RasterOptions options)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -677,6 +682,7 @@ public sealed class FreeTypeRasterizer : IRasterizer
         return (int)((v + 32) >> 6);
     }
 
+    /// <inheritdoc />
     public unsafe void Dispose()
     {
         if (_disposed) return;

@@ -18,7 +18,7 @@
     <PackageProjectUrl>https://github.com/kaltinril/Kernsmith</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Authors>Kaltinril (Jeremy Swartwood)</Authors>
-    <PackageTags>kernsmith;native;rasterizer;bitmap-font;game-dev;cross-platform;wasm;pure-csharp;sdf</PackageTags>
+    <PackageTags>kernsmith;native;rasterizer;bitmap-font;game-dev;cross-platform;wasm;pure-csharp</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="/" />

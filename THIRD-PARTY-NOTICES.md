@@ -57,20 +57,18 @@ component's upstream `LICENSE`/`COPYING` file. Nothing here is paraphrased.
 | StbTrueTypeSharp | 1.26.13 | Public Domain (`Unlicense`-equivalent) | NuGet (StbTrueType backend) |
 | stb_truetype SDF (`StbTrueTypeSdfVendored.cs`) | n/a (source) | Public Domain / `MIT` | Source in StbTrueType backend |
 | TerraFX.Interop.Windows | 10.0.26100.6 | `MIT` | NuGet (DirectWrite backend) |
-| MonoGame.Framework.DesktopGL | 3.8.5.1 | `Ms-PL` | NuGet + native runtime (KernSmith.Ui desktop app) |
+| MonoGame.Framework.DesktopGL | 3.8.6 | `Ms-PL` | NuGet + native runtime (KernSmith.Ui desktop app) |
 | SDL2 (bundled by MonoGame DesktopGL) | n/a (native) | `Zlib` | Native binary (UI) |
 | OpenAL Soft (bundled by MonoGame DesktopGL) | 1.24.3 | `LGPL-2.0-or-later` (GNU Library GPL v2) | Native binary (UI) |
-| Gum.MonoGame | 2026.9.2.1 | `MIT` | NuGet (KernSmith.Ui desktop app) |
-| Gum.Themes.Editor.MonoGame | 2026.9.2.1 | `MIT` | NuGet (KernSmith.Ui desktop app) |
+| Gum.MonoGame | 2026.10.1.1 | `MIT` | NuGet (KernSmith.Ui desktop app) |
+| Gum.Themes.Editor.MonoGame | 2026.10.1.1 | `MIT` | NuGet (KernSmith.Ui desktop app) |
 | NativeFileDialogNET | 2.0.2 | `Zlib` | NuGet (UI / CLI file dialogs) |
 | nativefiledialog-extended (native, underlying) | n/a (native) | `Zlib` | Native binary (UI / CLI) |
 
 > **Not included:** `System.Drawing.Common` is **not** a KernSmith dependency. The
 > GDI rasterizer backend (`KernSmith.Rasterizers.Gdi`) talks to Windows
 > `gdi32.dll`/`user32.dll` directly via P/Invoke; those are operating-system
-> components, not redistributed third-party packages. `MonoGame.Extended` and
-> `NativeFileDialogSharp` appear in `Directory.Packages.props` but are not
-> referenced by any project, so they are not redistributed and are omitted here.
+> components, not redistributed third-party packages.
 
 ---
 
@@ -133,7 +131,7 @@ is identical across them and is reproduced once in
   ```
 
 ### Gum packages
-Applies to **Gum.MonoGame 2026.9.2.1** and **Gum.Themes.Editor.MonoGame 2026.9.2.1**
+Applies to **Gum.MonoGame 2026.10.1.1** and **Gum.Themes.Editor.MonoGame 2026.10.1.1**
 (dependencies of the `KernSmith.Ui` desktop app).
 - **Project URL:** https://github.com/vchelaru/Gum
 - **SPDX:** `MIT`
@@ -174,7 +172,7 @@ dual license). The file already carries an in-source attribution header.
 The following components are under the **Microsoft Public License (Ms-PL)**. The
 full Ms-PL text is reproduced once in [Appendix A.3](#a3-microsoft-public-license-ms-pl).
 
-### MonoGame.Framework.DesktopGL 3.8.5.1
+### MonoGame.Framework.DesktopGL 3.8.6
 - **Project URL:** https://github.com/MonoGame/MonoGame
 - **SPDX:** `Ms-PL` (with a portion under MIT — see below)
 - **Copyright (verbatim, from MonoGame `LICENSE.txt`):**
@@ -225,8 +223,8 @@ reproduced once in [Appendix A.4](#a4-zlib-license).
 ## 7. OpenAL Soft — GNU Library General Public License
 
 - **Name:** OpenAL Soft
-- **Version:** **1.24.3** (bundled by MonoGame.Framework.DesktopGL 3.8.5.1 via the
-  `MonoGame.Library.OpenAL` 1.24.3.2 native package)
+- **Version:** **1.24.3** (bundled by MonoGame.Framework.DesktopGL 3.8.6 via the
+  `MonoGame.Library.OpenAL` 1.24.3.4 native package)
 - **Project URL:** https://github.com/kcat/openal-soft
 - **SPDX license:** `LGPL-2.0-or-later`
 

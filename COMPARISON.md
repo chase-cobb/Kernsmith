@@ -42,7 +42,7 @@ How does KernSmith compare to other bitmap font generators?
 
 | | KernSmith | BMFont | Hiero | msdf-atlas-gen | bmGlyph | Glyph Designer | ShoeBox |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Rasterizer** | FreeType + GDI + DWrite + Stb | GDI + TT outline | Java AWT / FreeType | msdfgen (FreeType) | Core Text | Core Text | Flash |
+| **Rasterizer** | FreeType + GDI + DWrite + Stb + Native (experimental) | GDI + TT outline | Java AWT / FreeType | msdfgen (FreeType) | Core Text | Core Text | Flash |
 | **Pluggable Rasterizers** | ✅ | ❌ | ⚠️ | ❌ | ❌ | ❌ | ❌ |
 | **Anti-Aliasing** | 4 modes | Multiple modes | Basic | N/A | Basic | Basic | Basic |
 | **Super Sampling** | 1-4x | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
@@ -220,8 +220,6 @@ Native's platform rows follow from it being pure managed code with no native dep
 | **TTC (font collections)** | ✅ | ❌ | ✅ | ✅ | ✅ |
 | **Anti-aliasing** | Grayscale, Light, LCD, None | Grayscale, None | None, Grayscale | Grayscale, None | Grayscale, None |
 | **SDF Rendering** | ✅ | ❌ | ❌ | ✅ | ❌ |
-
-WOFF1 is decompressed by KernSmith core before rasterization, so all backends accept it for fonts whose outlines they otherwise support (StbTrueType and Native still require TrueType `glyf` outlines inside the WOFF). WOFF2 is not yet supported.
 | **Hinting** | ✅ | ✅ | ✅ | ❌ | ❌ |
 | **Synthetic Bold** | ✅ | ✅ | ✅ | ✅ | ❌ |
 | **Synthetic Italic** | ✅ | ✅ | ✅ | ✅ | ❌ |
@@ -231,6 +229,8 @@ WOFF1 is decompressed by KernSmith core before rasterization, so all backends ac
 | **Variable Fonts** | ✅ | ❌ | ❌ | ❌ | ❌ |
 | **System Font Loading** | ❌ | ✅ | ✅ | ❌ | ❌ |
 | **BMFont.exe Parity** | ❌ | ✅ | ❌ | ❌ | ❌ |
+
+WOFF1 is decompressed by KernSmith core before rasterization, so all backends accept it for fonts whose outlines they otherwise support (StbTrueType and Native still require TrueType `glyf` outlines inside the WOFF). WOFF2 is not yet supported.
 
 ### When to Use
 

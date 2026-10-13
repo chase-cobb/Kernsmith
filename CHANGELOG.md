@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.22.1] - 2026-10-12
+
+### Changed
+
+- Desktop UI dependencies bumped: `MonoGame.Framework.DesktopGL` 3.8.6 and the Gum family in lockstep to 2026.10.1.1 (`Gum.MonoGame`, `Gum.Themes.Editor.MonoGame`, `KernSmith.GumCommon`, `KernSmith.MonoGameGum`), with the UI's resulting nullable warnings fixed. The library, rasterizer backends and CLI are unchanged.
+- Test and docs tooling bumped: `xunit.v3` 4.0.2, `xunit.runner.visualstudio` 4.0.1, `Microsoft.NET.Test.Sdk` 18.10.1, `coverlet.collector` 10.1.0, `docfx` 2.81.0.
+- The docs site links the KernSmith Discord server.
+
+### Fixed
+
+- `THIRD-PARTY-NOTICES.md` versions updated for the UI dependency bumps (`MonoGame.Framework.DesktopGL` 3.8.6 with `MonoGame.Library.OpenAL` 1.24.3.4, Gum 2026.10.1.1), and the stale note about unreferenced `MonoGame.Extended`/`NativeFileDialogSharp` packages is removed.
+- `COMPARISON.md`: the rasterizer Feature Support table is contiguous again (the WOFF note had split it mid-table, breaking the rows from Hinting down), and the Rasterization table lists the experimental Native backend.
+- The CLI README documents the `--max-texture-size` alias of `--max-texture`.
+- `FreeTypeRasterizer`'s public interface members carry `<inheritdoc />` like the other backends.
+- The Native rasterizer's package tags no longer advertise `sdf`; it does not support SDF rendering.
+
 ## [0.22.0] - 2026-09-09
 
 ### Changed
