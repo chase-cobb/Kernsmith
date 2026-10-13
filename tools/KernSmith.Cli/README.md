@@ -119,7 +119,7 @@ kernsmith generate -f font.ttf -s 32 --range 0020-007E --range 00A0-00FF
 
 | Flag | Description |
 |------|-------------|
-| `--max-texture <n>` | Maximum texture size in pixels (default: 1024) |
+| `--max-texture <n>` | Maximum texture size in pixels (alias `--max-texture-size`, default: 1024) |
 | `--max-texture-width <n>` | Maximum texture width (independent of height) |
 | `--max-texture-height <n>` | Maximum texture height (independent of width) |
 | `--autofit` | Auto-fit smallest texture size for all glyphs |
