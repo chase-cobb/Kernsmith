@@ -55,6 +55,13 @@ Source of truth for statements about the project. One short fact per line. Updat
 - The regression harness exercises the CLI `GenerateAll` path only, not the UI `GenerationService`; verify UI-generation changes separately.
 - `GenerateAll` skips a (config, backend) pair when the backend declines a capability the config requests — e.g. SDF on GDI/DirectWrite/Native.
 - `dotnet run` exits 1 for **both** a build failure and a partial generation, so the two must be distinguished by building as a separate step.
+- `tests/KernSmith.PlatformSmoke` is deliberately **not** in `KernSmith.sln`: its mobile TFMs need the android/ios/maccatalyst workloads, which the normal CI legs don't install. It builds `net10.0;net10.0-android`, adding `net10.0-ios;net10.0-maccatalyst` only on macOS; `-p:SmokeTarget=<tfm>` narrows it to one target. Only `.github/workflows/mobile-smoke.yml` and the `run-*.sh` scripts build it, always in Release (trimming/AOT).
+- Building the Android leg locally needs Android SDK platform API 36: `dotnet build tests/KernSmith.PlatformSmoke -t:InstallAndroidDependencies -f net10.0-android -p:SmokeTarget=net10.0-android -p:AndroidSdkDirectory=<sdk>`.
+- Android RID fallback gotcha: NuGet maps android-x64 -> linux-x64, so FreeTypeSharp's desktop glibc `runtimes/linux-x64/libfreetype.so` overrides the Android `.so` from its `.aar` and x86_64 fails with `DllNotFoundException` (`libm.so.6`). `src/KernSmith.Rasterizers.FreeType/buildTransitive/KernSmith.Rasterizers.FreeType.targets` (packed to `build/` and `buildTransitive/`) removes FreeTypeSharp `NativeCopyLocalItems` on Android; project references must `<Import>` it explicitly. With it, every packaged `libfreetype.so` is 16KB-aligned.
+- Platform verification: Android (API 34 emulator, x86_64 + arm64, Release, `TrimMode=full`) passes StbTrueType, FreeType and Native. Linux arm64 (CI `ubuntu-24.04-arm`) and Mac Catalyst (CI `macos-26`, maccatalyst-arm64, Release, full AOT) pass StbTrueType and Native; FreeType fails on both with no native library. iOS simulator (CI `macos-26`, iOS 26.4, iossimulator-arm64, Release, no JIT) passes StbTrueType (generate + SDF) and Native; FreeType is not built for iOS (link failure, below). A real-iPhone run (Phase 186) is still pending as extra confirmation. `DefaultSystemFontProvider` returns 0 fonts on Android, iOS and Mac Catalyst (no throw).
+- FreeType on iOS: an iOS app that references `KernSmith.Rasterizers.FreeType` fails to **link**, even if FreeType is never used — FreeTypeSharp 3.1.0's static iOS `libfreetype.a` references 20 libpng symbols (FreeType sfnt PNG bitmaps, `Load_SBit_Png`) that nothing provides. Fix needs a libpng for iOS or an upstream FreeTypeSharp change. The smoke app's iOS build drops the FreeType `ProjectReference` and defines `KSMOKE_NO_FREETYPE`.
+- Smoke `KSMOKE_EXPECT_FAIL=<backends>`: those backends' failures report `XFAIL` and don't count; a passing `generate` reports `XPASS` and fails the run, so the table can't go stale. CI sets it for FreeType on Linux arm64 and Mac Catalyst (no `continue-on-error`).
+- `mobile-smoke.yml` pins the ios/maccatalyst workloads to 26.5.10318 via a rollback file: the newest workload (27.0) requires Xcode 27, which the `macos-26` runners (Xcode 26.x) lack. Bump the pin with the runner image. NativeAOT publish needs a device RID, so there is no simulator AOT leg; full Apple AOT is covered by Mac Catalyst and real devices.
 - Local NuGet validation needs `packageSourceMapping`: route `KernSmith*` to the local feed and `*` to nuget.org in the consumer `nuget.config`.
 
 ## CodeQL
@@ -76,5 +83,7 @@ Source of truth for statements about the project. One short fact per line. Updat
 | Tests | `tests/KernSmith.Tests/` |
 | Test font fixture | `tests/KernSmith.Tests/Fixtures/Roboto-Regular.ttf` |
 | Regression/output comparison | `tests/bmfont-compare/regression_check.py` |
+| Platform smoke test (desktop/Android/iOS/Mac Catalyst) | `tests/KernSmith.PlatformSmoke/` |
+| FreeType Android packaging fix | `src/KernSmith.Rasterizers.FreeType/buildTransitive/KernSmith.Rasterizers.FreeType.targets` |
 | CI/CD | `.github/workflows/` |
 | Docs site | kaltinril.github.io/Kernsmith |

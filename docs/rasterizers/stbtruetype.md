@@ -1,6 +1,6 @@
 # StbTrueType
 
-Managed-only rasterizer backend for KernSmith using [StbTrueTypeSharp](https://github.com/StbSharp/StbTrueTypeSharp). No native dependencies -- runs on any .NET platform including Blazor WASM, NativeAOT, and serverless environments.
+Managed-only rasterizer backend for KernSmith using [StbTrueTypeSharp](https://github.com/StbSharp/StbTrueTypeSharp). No native dependencies -- verified on Windows, Linux x64 and arm64, macOS, Android, iOS, Mac Catalyst, and Blazor WASM, and suited to NativeAOT and serverless environments -- see the [platform support table](../../README.md#platform-support).
 
 ## Installation
 
@@ -54,7 +54,7 @@ This is novel work -- no other StbTrueTypeSharp consumer (including FontStashSha
 
 ## Native AOT and Trimming
 
-StbTrueType is the **recommended backend for Native AOT and trimming** -- it is pure C#, has no native dependencies, and is the only backend marked AOT-compatible.
+StbTrueType is the **recommended backend for Native AOT and trimming** -- it is pure C#, has no native dependencies, and is the only published backend marked AOT-compatible. (The experimental [Native](native.md) backend is also AOT-annotated, but it is not published to NuGet.)
 
 KernSmith's auto-discovery resolves backends by name via reflection, which **does not work under Native AOT or trimming**: the backend may be trimmed away or cannot be resolved by name, so generation fails with a "backend is not registered" error. You must register the backend explicitly.
 
@@ -85,11 +85,11 @@ using KernSmith.Rasterizers.StbTrueType;
 RasterizerFactory.Register(RasterizerBackend.StbTrueType, () => new StbTrueTypeRasterizer());
 ```
 
-See the [rasterizers overview](index.md#native-aot-and-trimming) for more detail. The FreeType, GDI, and DirectWrite backends use native interop and are not targeted for AOT.
+See the [rasterizers overview](index.md#native-aot-and-trimming) for more detail. The FreeType, GDI, and DirectWrite backends use native interop and are not targeted for AOT (FreeType has been verified in fully trimmed Android Release builds when registered explicitly).
 
 ## When to Use
 
-Use StbTrueType when you need bitmap font generation on platforms where native FreeType binaries are unavailable: Blazor WebAssembly, NativeAOT trimmed deployments, iOS AOT, serverless containers, or any environment where zero native dependencies is a requirement. For full-featured rendering, use the FreeType backend instead.
+Use StbTrueType when you need bitmap font generation on platforms where native FreeType binaries are unavailable: Blazor WebAssembly, NativeAOT trimmed deployments, Linux arm64, Mac Catalyst, serverless containers, or any environment where zero native dependencies is a requirement. For full-featured rendering, use the FreeType backend instead (not on iOS, where it fails to link). See the [platform support table](https://github.com/kaltinril/Kernsmith#platform-support).
 
 ## Blazor WASM
 

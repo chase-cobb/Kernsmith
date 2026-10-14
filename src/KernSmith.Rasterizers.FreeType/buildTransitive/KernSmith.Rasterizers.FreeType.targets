@@ -1,0 +1,16 @@
+<Project>
+  <!--
+    Android: FreeTypeSharp ships its Android libfreetype.so inside an .aar, but NuGet's RID
+    fallback (android-x64 -> linux-x64) also selects the desktop runtimes/linux-x64 glibc build.
+    That copy wins in the APK and fails to load on x86_64 Android ("libm.so.6 not found").
+    Drop FreeTypeSharp's runtimes/* natives on Android so only the .aar libraries are packaged.
+    Packed to build/ and buildTransitive/ so direct and transitive consumers both get it.
+  -->
+  <Target Name="KernSmithRemoveDesktopFreeTypeOnAndroid"
+          AfterTargets="ResolvePackageAssets"
+          Condition="'$(TargetPlatformIdentifier)' == 'android'">
+    <ItemGroup>
+      <NativeCopyLocalItems Remove="@(NativeCopyLocalItems)" Condition="'%(NativeCopyLocalItems.NuGetPackageId)' == 'FreeTypeSharp'" />
+    </ItemGroup>
+  </Target>
+</Project>

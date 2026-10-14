@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Platform smoke test (`tests/KernSmith.PlatformSmoke`): one app that generates fonts with the StbTrueType, FreeType and Native backends on desktop, Android, iOS and Mac Catalyst, run in CI by the new `mobile-smoke.yml` workflow (desktop on Windows/Linux/macOS, Android emulator, iOS simulator, Mac Catalyst). iOS (simulator) and Mac Catalyst are verified for StbTrueType and Native. iOS apps must not reference `KernSmith.Rasterizers.FreeType`: FreeTypeSharp's static iOS library references libpng, so the app fails to link.
+- `README.md` has a Platform Support table (platform × backend, marking what is verified versus expected) with mobile notes: register backends explicitly in trimmed/AOT apps, and load font bytes since there are no system fonts on mobile. Backend READMEs and docs list iOS as verified for StbTrueType and Native.
+
+### Fixed
+
+- `KernSmith.Rasterizers.FreeType` failed on Android x86_64 with `DllNotFoundException` (`libm.so.6` not found): NuGet's RID fallback (android-x64 -> linux-x64) packaged FreeTypeSharp's desktop glibc `libfreetype.so` into the APK over the Android build. The package now ships `build/`/`buildTransitive/` targets that drop FreeTypeSharp's desktop native libraries from Android builds, which also removes the only library that failed Android 15+'s 16KB page-size alignment check (XA0141).
+
 ## [0.22.1] - 2026-10-12
 
 ### Changed

@@ -1,0 +1,96 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Platform smoke test: one app that generates a bitmap font with every portable backend
+    (StbTrueType, FreeType, Native) and prints PASS/FAIL lines prefixed "KSMOKE". It is the
+    evidence behind the platform support table in README.md.
+
+    Not part of KernSmith.sln on purpose: the mobile TFMs need the android/ios/maccatalyst
+    workloads, which the normal build-and-test CI legs do not install. CI builds it in the
+    dedicated mobile jobs in .github/workflows/mobile-smoke.yml.
+
+    Build in Release: that is where Android trims and iOS AOT-compiles, which is what this
+    project exists to exercise. Debug builds hide trimming/AOT failures.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net10.0;net10.0-android</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>KernSmith.PlatformSmoke</RootNamespace>
+    <ApplicationId>com.kernsmith.platformsmoke</ApplicationId>
+    <ApplicationTitle>KernSmith Smoke</ApplicationTitle>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <!-- Trim the whole app, not just the SDK, so trimming problems in KernSmith itself surface. -->
+    <TrimMode>full</TrimMode>
+  </PropertyGroup>
+
+  <!-- Apple targets can only be built on a Mac. -->
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <TargetFrameworks>$(TargetFrameworks);net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+  </PropertyGroup>
+
+  <!--
+    -p:SmokeTarget=net10.0-ios (etc.) restores and builds only that target, so a machine needs
+    just that one workload. Used by the run-*.sh scripts and CI.
+  -->
+  <PropertyGroup Condition="'$(SmokeTarget)' != ''">
+    <TargetFrameworks>$(SmokeTarget)</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+    <SupportedOSPlatformVersion>24</SupportedOSPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <!-- FreeTypeSharp's iOS static libfreetype.a references libpng, which nothing provides, so an
+         iOS app referencing the FreeType backend fails to link. Leave it out on iOS. -->
+    <DefineConstants>$(DefineConstants);KSMOKE_NO_FREETYPE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst'))">
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <!-- Only compile the entry point for the platform being built. -->
+  <ItemGroup>
+    <Compile Remove="Platforms\**\*.cs" />
+    <None Remove="Platforms\**" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <Compile Include="Platforms\Desktop\**\*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+    <Compile Include="Platforms\Android\**\*.cs" />
+    <AndroidManifest Include="Platforms\Android\AndroidManifest.xml" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
+    <Compile Include="Platforms\iOS\**\*.cs" />
+  </ItemGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+    <AppBundleManifest>Platforms\iOS\Info.plist</AppBundleManifest>
+  </PropertyGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-maccatalyst'))">
+    <Compile Include="Platforms\iOS\**\*.cs" />
+  </ItemGroup>
+  <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst'))">
+    <AppBundleManifest>Platforms\MacCatalyst\Info.plist</AppBundleManifest>
+  </PropertyGroup>
+
+  <!-- Fonts are embedded resources: no file system or asset API is needed on any platform. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\KernSmith.Tests\Fixtures\Roboto-Regular.ttf" LogicalName="Roboto-Regular.ttf" />
+    <EmbeddedResource Include="..\KernSmith.Tests\Fixtures\RobotoFlex-Variable.ttf" LogicalName="RobotoFlex-Variable.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\KernSmith\KernSmith.csproj" />
+    <ProjectReference Include="..\..\src\KernSmith.Rasterizers.StbTrueType\KernSmith.Rasterizers.StbTrueType.csproj" />
+    <ProjectReference Include="..\..\src\KernSmith.Rasterizers.FreeType\KernSmith.Rasterizers.FreeType.csproj" Condition="!$(TargetFramework.Contains('-ios'))" />
+    <ProjectReference Include="..\..\src\KernSmith.Rasterizers.Native\KernSmith.Rasterizers.Native.csproj" />
+  </ItemGroup>
+
+  <!-- NuGet consumers get this automatically from the package; project references must import it. -->
+  <Import Project="..\..\src\KernSmith.Rasterizers.FreeType\buildTransitive\KernSmith.Rasterizers.FreeType.targets" />
+
+</Project>

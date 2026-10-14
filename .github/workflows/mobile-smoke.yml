@@ -1,0 +1,110 @@
+name: Platform Smoke
+
+# Runs tests/KernSmith.PlatformSmoke on every platform in the README support table.
+# Each job fails unless the app prints "KSMOKE RESULT PASS". Kept separate from ci.yml
+# because the mobile legs need extra workloads, emulators and simulators.
+
+on:
+  push:
+    branches: [main]
+    paths: ['src/**', 'tests/KernSmith.PlatformSmoke/**', 'tests/KernSmith.Tests/Fixtures/**', '.github/workflows/mobile-smoke.yml', 'Directory.*.props', 'global.json']
+  pull_request:
+    branches: [main]
+    paths: ['src/**', 'tests/KernSmith.PlatformSmoke/**', 'tests/KernSmith.Tests/Fixtures/**', '.github/workflows/mobile-smoke.yml', 'Directory.*.props', 'global.json']
+  workflow_dispatch:
+
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, ubuntu-24.04-arm, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - name: Smoke (${{ matrix.os }})
+        shell: bash
+        run: |
+          set -o pipefail
+          # SmokeTarget: restore only net10.0 so no mobile workload is needed.
+          dotnet run --project tests/KernSmith.PlatformSmoke -c Release -f net10.0 -p:SmokeTarget=net10.0 | tee smoke.log
+        env:
+          # FreeTypeSharp ships no Linux arm64 native library.
+          KSMOKE_EXPECT_FAIL: ${{ matrix.os == 'ubuntu-24.04-arm' && 'FreeType' || '' }}
+
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: microsoft
+          java-version: '21'
+      - name: Install android workload
+        run: dotnet workload install android
+      - name: Install Android SDK dependencies
+        run: dotnet build tests/KernSmith.PlatformSmoke -t:InstallAndroidDependencies -f net10.0-android -p:SmokeTarget=net10.0-android -p:AndroidSdkDirectory="$ANDROID_HOME" -p:AcceptAndroidSDKLicenses=true
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Smoke on emulator (API 34, x86_64)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          script: bash tests/KernSmith.PlatformSmoke/run-android.sh
+
+  ios-simulator:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      # Pin the workload to the line that matches the runner's stable Xcode: the newest
+      # workload requires an Xcode the runners don't have yet. Bump with the runner image.
+      - name: Install ios workload
+        run: |
+          echo '{"microsoft.net.sdk.ios": "26.5.10318/10.0.100"}' > rollback.json
+          dotnet workload install ios --from-rollback-file rollback.json
+      - name: Smoke on iOS simulator
+        run: bash tests/KernSmith.PlatformSmoke/run-ios-sim.sh
+
+  maccatalyst:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      # Pinned for the same reason as the ios job.
+      - name: Install maccatalyst workload
+        run: |
+          echo '{"microsoft.net.sdk.maccatalyst": "26.5.10318/10.0.100"}' > rollback.json
+          dotnet workload install maccatalyst --from-rollback-file rollback.json
+      - name: Smoke on Mac Catalyst
+        run: bash tests/KernSmith.PlatformSmoke/run-maccatalyst.sh
+        env:
+          # FreeTypeSharp ships no Mac Catalyst native library.
+          KSMOKE_EXPECT_FAIL: FreeType

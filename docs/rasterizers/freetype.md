@@ -4,7 +4,7 @@ The FreeType rasterizer backend for KernSmith. Uses [FreeTypeSharp](https://gith
 
 ## Platform
 
-Cross-platform -- Linux, macOS, Windows.
+Cross-platform -- Windows, Linux x64, macOS, and Android (Android x86_64 needs the next FreeType package release, which carries the Android packaging fix; arm64 works in all versions). Linux arm64, Mac Catalyst, and Blazor WASM are unsupported (FreeTypeSharp ships no native library for them). iOS is unsupported: an iOS app that references the FreeType package fails to link, because FreeTypeSharp's static iOS library references libpng symbols that nothing provides -- use StbTrueType there. See the [platform support table](../../README.md#platform-support).
 
 ## Installation
 
