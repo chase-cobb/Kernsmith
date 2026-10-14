@@ -197,9 +197,9 @@ KernSmith supports five pluggable rasterizer backends. Each has different platfo
 | **Linux x64** | ✅ | ❌ | ❌ | ✅ | ✅ |
 | **Linux arm64** | ❌ | ❌ | ❌ | ✅ | ✅ |
 | **macOS** | ✅ | ❌ | ❌ | ✅ | ✅ |
-| **Blazor WASM** | ❌ | ❌ | ❌ | ✅ | ⏳ |
+| **Blazor WASM** | ❌ | ❌ | ❌ | ✅ ² | ⏳ |
 | **NativeAOT** | ⚠️ | ⚠️ | ⚠️ | ✅ | ✅ |
-| **Android** | ✅ | ❌ | ❌ | ✅ | ✅ |
+| **Android** | ✅ ¹ | ❌ | ❌ | ✅ | ✅ |
 | **iOS** | ❌ | ❌ | ❌ | ✅ | ✅ |
 | **Mac Catalyst** | ❌ | ❌ | ❌ | ✅ | ✅ |
 | **Serverless / Containers** | ✅ | ❌ | ❌ | ✅ | ✅ |
@@ -208,6 +208,10 @@ KernSmith supports five pluggable rasterizer backends. Each has different platfo
 | **Trimming Safe** | ⚠️ | N/A | N/A | ✅ | ✅ |
 | **AOT Compatible** | ⚠️ | N/A | N/A | ✅ | ✅ |
 | **Published on NuGet** | ✅ | ✅ | ✅ | ✅ | ❌ |
+
+¹ Android x86_64 (emulators, Chromebooks) needs `KernSmith.Rasterizers.FreeType` 0.23.0 or later; arm64 works in all versions.
+
+² Blazor WASM is built and published in CI but the output is not run.
 
 Native's platform rows follow from it being pure managed code with no native dependencies (it is marked `IsTrimmable`/`IsAotCompatible`); Android, Linux arm64, Mac Catalyst (full AOT), and the iOS simulator have been verified by the platform smoke test, but the WASM and console targets have not been exercised for it yet. StbTrueType remains the recommended managed backend for those environments. FreeType is ❌ on iOS because an iOS app referencing it fails to link (FreeTypeSharp's static iOS library needs libpng, which nothing provides); do not reference it in iOS apps. ⏳ = expected but not yet verified; see the [README platform support table](README.md#platform-support) for what the platform smoke test has confirmed.
 

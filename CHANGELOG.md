@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-10-14
+
 ### Added
 
 - Platform smoke test (`tests/KernSmith.PlatformSmoke`): one app that generates fonts with the StbTrueType, FreeType and Native backends on desktop, Android, iOS and Mac Catalyst, run in CI by the new `mobile-smoke.yml` workflow (desktop on Windows/Linux/macOS, Android emulator, iOS simulator, Mac Catalyst). iOS (simulator) and Mac Catalyst are verified for StbTrueType and Native. iOS apps must not reference `KernSmith.Rasterizers.FreeType`: FreeTypeSharp's static iOS library references libpng, so the app fails to link.
 - `README.md` has a Platform Support table (platform × backend, marking what is verified versus expected) with mobile notes: register backends explicitly in trimmed/AOT apps, and load font bytes since there are no system fonts on mobile. Backend READMEs and docs list iOS as verified for StbTrueType and Native.
+
+### Changed
+
+- Platform docs corrected: the FreeType Android x86_64 fix is stated as 0.23.0 or later, Native and StbTrueType list their verified platforms, Blazor WASM is described as built in CI rather than verified, and the FreeType package description names its supported platforms.
 
 ### Fixed
 

@@ -93,13 +93,14 @@ var result = BmFont.Builder()
 | **Android** | ✅ | ✅ ¹ | ❌ | ❌ | ✅ |
 | **iOS** ³ | ✅ | ❌ ² | ❌ | ❌ | ✅ |
 | **Mac Catalyst** | ✅ | ❌ | ❌ | ❌ | ✅ |
-| **Blazor WASM** | ✅ | ❌ | ❌ | ❌ | ⏳ |
+| **Blazor WASM** | ✅ ⁴ | ❌ | ❌ | ❌ | ⏳ |
 
 ✅ tested in CI or on a device/emulator &middot; ⏳ expected to work, not yet verified &middot; ❌ unsupported (no native library or Windows-only API)
 
-1. Android x86_64 (emulators, Chromebooks) needs the next `KernSmith.Rasterizers.FreeType` release, which carries the Android packaging fix (see [CHANGELOG](CHANGELOG.md)); earlier packages leak FreeTypeSharp's desktop Linux library into the APK and fail with `DllNotFoundException`. arm64 works in all versions.
+1. Android x86_64 (emulators, Chromebooks) needs `KernSmith.Rasterizers.FreeType` 0.23.0 or later, which carries the Android packaging fix (see [CHANGELOG](CHANGELOG.md)); earlier packages leak FreeTypeSharp's desktop Linux library into the APK and fail with `DllNotFoundException`. arm64 works in all versions.
 2. An iOS app that references `KernSmith.Rasterizers.FreeType` fails to link, even if FreeType is never used: FreeTypeSharp 3.1.0's static iOS `libfreetype.a` references libpng symbols (`_png_create_read_struct` and others) that nothing provides. Do not reference the FreeType package in iOS apps; use StbTrueType or Native. FreeTypeSharp has no native library for Linux arm64, Mac Catalyst, or WASM.
 3. iOS is verified on the iOS simulator in CI (Release, no JIT); a real-iPhone confirmation is tracked in [phase 186](plan/phase-186-apple-platform-verification.md).
+4. Blazor WASM is built and published in CI (the `wasm-publish` job) but the output is not run, so it is not runtime-verified.
 
 Mobile notes:
 
