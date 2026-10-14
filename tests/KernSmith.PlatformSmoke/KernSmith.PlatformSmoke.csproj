@@ -44,9 +44,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
     <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
-    <!-- -p:SmokeAot=true selects NativeAOT. Set here rather than as a global PublishAot,
-         which would flow into the referenced net8.0/net10.0 libraries and fail there. -->
-    <PublishAot Condition="'$(SmokeAot)' == 'true'">true</PublishAot>
+    <!-- FreeTypeSharp's iOS static libfreetype.a references libpng, which nothing provides, so an
+         iOS app referencing the FreeType backend fails to link. Leave it out on iOS. -->
+    <DefineConstants>$(DefineConstants);KSMOKE_NO_FREETYPE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst'))">
     <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
@@ -86,7 +86,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\KernSmith\KernSmith.csproj" />
     <ProjectReference Include="..\..\src\KernSmith.Rasterizers.StbTrueType\KernSmith.Rasterizers.StbTrueType.csproj" />
-    <ProjectReference Include="..\..\src\KernSmith.Rasterizers.FreeType\KernSmith.Rasterizers.FreeType.csproj" />
+    <ProjectReference Include="..\..\src\KernSmith.Rasterizers.FreeType\KernSmith.Rasterizers.FreeType.csproj" Condition="!$(TargetFramework.Contains('-ios'))" />
     <ProjectReference Include="..\..\src\KernSmith.Rasterizers.Native\KernSmith.Rasterizers.Native.csproj" />
   </ItemGroup>
 

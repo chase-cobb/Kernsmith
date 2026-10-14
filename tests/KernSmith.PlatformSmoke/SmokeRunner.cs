@@ -3,7 +3,9 @@ using System.Runtime.InteropServices;
 using KernSmith.Font;
 using KernSmith.Output;
 using KernSmith.Rasterizer;
+#if !KSMOKE_NO_FREETYPE
 using KernSmith.Rasterizers.FreeType;
+#endif
 using KernSmith.Rasterizers.Native;
 using KernSmith.Rasterizers.StbTrueType;
 
@@ -12,6 +14,11 @@ namespace KernSmith.PlatformSmoke;
 /// <summary>
 /// Runs the platform smoke checks and reports each as a "KSMOKE PASS|FAIL|SKIP" line.
 /// The final line is "KSMOKE RESULT PASS" or "KSMOKE RESULT FAIL"; CI greps for it.
+/// <para>
+/// KSMOKE_EXPECT_FAIL (comma-separated backend names) marks backends known not to work on
+/// the platform: their failures report as XFAIL and don't count, but a passing "generate"
+/// check reports XPASS and does count, so the support table can't go stale silently.
+/// </para>
 /// </summary>
 public static class SmokeRunner
 {
@@ -21,18 +28,22 @@ public static class SmokeRunner
     public static bool Run(Action<string> log)
     {
         int failures = 0;
+        var expectFail = (Environment.GetEnvironmentVariable("KSMOKE_EXPECT_FAIL") ?? "")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         void Report(string status, string name, string detail = "")
         {
-            if (status == "FAIL") failures++;
+            if (status is "FAIL" or "XPASS") failures++;
             log($"{Prefix} {status} {name}{(detail.Length > 0 ? " -- " + detail : "")}");
         }
 
         void Check(string name, Func<string> body)
         {
+            bool expected = expectFail.Any(b => name.StartsWith(b + " ", StringComparison.Ordinal));
             try
             {
-                Report("PASS", name, body());
+                string detail = body();
+                Report(expected && name.EndsWith(" generate", StringComparison.Ordinal) ? "XPASS" : "PASS", name, detail);
             }
             catch (SkipException ex)
             {
@@ -40,8 +51,9 @@ public static class SmokeRunner
             }
             catch (Exception ex)
             {
-                Report("FAIL", name, $"{ex.GetType().Name}: {ex.Message}");
-                log(ex.ToString());
+                Report(expected ? "XFAIL" : "FAIL", name, $"{ex.GetType().Name}: {ex.Message}");
+                if (!expected)
+                    log(ex.ToString());
             }
         }
 
@@ -52,8 +64,14 @@ public static class SmokeRunner
         // Explicit registration: the documented pattern for trimmed/AOT apps, where
         // reflection-based backend auto-discovery is not available.
         RasterizerFactory.Register(RasterizerBackend.StbTrueType, () => new StbTrueTypeRasterizer());
-        RasterizerFactory.Register(RasterizerBackend.FreeType, () => new FreeTypeRasterizer());
         RasterizerFactory.Register(RasterizerBackend.Native, () => new NativeRasterizer());
+#if KSMOKE_NO_FREETYPE
+        var backends = new[] { RasterizerBackend.StbTrueType, RasterizerBackend.Native };
+        log($"{Prefix} INFO FreeType not built for this target (see KernSmith.PlatformSmoke.csproj)");
+#else
+        RasterizerFactory.Register(RasterizerBackend.FreeType, () => new FreeTypeRasterizer());
+        var backends = new[] { RasterizerBackend.StbTrueType, RasterizerBackend.FreeType, RasterizerBackend.Native };
+#endif
 
         var roboto = LoadFont("Roboto-Regular.ttf");
         var robotoFlex = LoadFont("RobotoFlex-Variable.ttf");
@@ -64,7 +82,7 @@ public static class SmokeRunner
             return $"{fonts.Count} installed fonts";
         });
 
-        foreach (var backend in new[] { RasterizerBackend.StbTrueType, RasterizerBackend.FreeType, RasterizerBackend.Native })
+        foreach (var backend in backends)
         {
             IRasterizerCapabilities? caps = null;
             Check($"{backend} create", () =>

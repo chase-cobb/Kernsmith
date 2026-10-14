@@ -32,9 +32,9 @@ jobs:
           set -o pipefail
           # SmokeTarget: restore only net10.0 so no mobile workload is needed.
           dotnet run --project tests/KernSmith.PlatformSmoke -c Release -f net10.0 -p:SmokeTarget=net10.0 | tee smoke.log
-        # Linux arm64 has no FreeTypeSharp native, so FreeType is expected to fail there;
-        # the log still documents StbTrueType/Native. Everything else must pass.
-        continue-on-error: ${{ matrix.os == 'ubuntu-24.04-arm' }}
+        env:
+          # FreeTypeSharp ships no Linux arm64 native library.
+          KSMOKE_EXPECT_FAIL: ${{ matrix.os == 'ubuntu-24.04-arm' && 'FreeType' || '' }}
 
   android:
     runs-on: ubuntu-latest
@@ -68,11 +68,6 @@ jobs:
           script: bash tests/KernSmith.PlatformSmoke/run-android.sh
 
   ios-simulator:
-    strategy:
-      fail-fast: false
-      matrix:
-        # mono = the default iOS runtime; aot = NativeAOT, closest to a device's full AOT.
-        runtime: [mono, aot]
     runs-on: macos-26
     timeout-minutes: 45
     steps:
@@ -89,8 +84,8 @@ jobs:
         run: |
           echo '{"microsoft.net.sdk.ios": "26.5.10318/10.0.100"}' > rollback.json
           dotnet workload install ios --from-rollback-file rollback.json
-      - name: Smoke on iOS simulator (${{ matrix.runtime }})
-        run: bash tests/KernSmith.PlatformSmoke/run-ios-sim.sh ${{ matrix.runtime == 'aot' && '--aot' || '' }}
+      - name: Smoke on iOS simulator
+        run: bash tests/KernSmith.PlatformSmoke/run-ios-sim.sh
 
   maccatalyst:
     runs-on: macos-26
@@ -110,3 +105,6 @@ jobs:
           dotnet workload install maccatalyst --from-rollback-file rollback.json
       - name: Smoke on Mac Catalyst
         run: bash tests/KernSmith.PlatformSmoke/run-maccatalyst.sh
+        env:
+          # FreeTypeSharp ships no Mac Catalyst native library.
+          KSMOKE_EXPECT_FAIL: FreeType

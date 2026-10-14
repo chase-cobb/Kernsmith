@@ -195,7 +195,7 @@ KernSmith supports five pluggable rasterizer backends. Each has different platfo
 |---|:---:|:---:|:---:|:---:|:---:|
 | **Windows** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Linux x64** | ✅ | ❌ | ❌ | ✅ | ✅ |
-| **Linux arm64** | ❌ | ❌ | ❌ | ⏳ | ⏳ |
+| **Linux arm64** | ❌ | ❌ | ❌ | ✅ | ✅ |
 | **macOS** | ✅ | ❌ | ❌ | ✅ | ✅ |
 | **Blazor WASM** | ❌ | ❌ | ❌ | ✅ | ⏳ |
 | **NativeAOT** | ⚠️ | ⚠️ | ⚠️ | ✅ | ✅ |

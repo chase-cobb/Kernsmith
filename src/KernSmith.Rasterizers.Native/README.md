@@ -10,7 +10,7 @@ feature parity with the FreeType backend over time, doing outline-level work (sy
 bold/italic, stroking, SDF) in managed C#.
 
 **Platform**: Cross-platform (`net8.0`, `net10.0`). No native libraries required.
-Trim- and AOT-friendly. Verified on Windows, Linux, macOS, and Android; Blazor WASM, iOS, and
+Trim- and AOT-friendly. Verified on Windows, Linux (x64 and arm64), macOS, and Android; Blazor WASM, iOS, and
 Mac Catalyst are expected to work but not yet verified — see the
 [platform support table](https://github.com/kaltinril/Kernsmith#platform-support).
 

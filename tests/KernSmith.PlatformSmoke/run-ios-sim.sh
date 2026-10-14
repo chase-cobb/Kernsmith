@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 # Build the smoke app for the iOS simulator, run it, and fail unless it reports
 # "KSMOKE RESULT PASS". macOS + Xcode + the .NET ios workload required.
-#
-#   run-ios-sim.sh          Mono (the default iOS runtime)
-#   run-ios-sim.sh --aot    NativeAOT, the closest the simulator gets to a device's full AOT
+# The simulator JIT-compiles; full AOT is exercised by Mac Catalyst and on a real device.
 set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
@@ -11,12 +9,7 @@ bundle=com.kernsmith.platformsmoke
 arch=$(uname -m | sed 's/x86_64/x64/')
 rid="iossimulator-$arch"
 
-# NativeAOT only applies on publish; the .app still lands in the normal bin folder.
-if [ "${1:-}" = "--aot" ]; then
-  dotnet publish "$here" -c Release -f net10.0-ios -p:SmokeTarget=net10.0-ios -p:RuntimeIdentifier="$rid" -p:SmokeAot=true
-else
-  dotnet build "$here" -c Release -f net10.0-ios -p:SmokeTarget=net10.0-ios -p:RuntimeIdentifier="$rid"
-fi
+dotnet build "$here" -c Release -f net10.0-ios -p:SmokeTarget=net10.0-ios -p:RuntimeIdentifier="$rid"
 app=$(find "$here/bin/Release/net10.0-ios/$rid" -maxdepth 1 -name '*.app' | head -1)
 [ -n "$app" ] || { echo "KSMOKE FAIL no .app produced"; exit 1; }
 
@@ -39,7 +32,7 @@ xcrun simctl install "$udid" "$app"
 
 # KSMOKE_EXIT makes the app quit once it has reported; SIMCTL_CHILD_ passes it through.
 log=$(mktemp)
-SIMCTL_CHILD_KSMOKE_EXIT=1 xcrun simctl launch --console-pty --terminate-running-process "$udid" "$bundle" \
+SIMCTL_CHILD_KSMOKE_EXIT=1 SIMCTL_CHILD_KSMOKE_EXPECT_FAIL="${KSMOKE_EXPECT_FAIL:-}" xcrun simctl launch --console-pty --terminate-running-process "$udid" "$bundle" \
   > "$log" 2>&1 &
 pid=$!
 for _ in $(seq 1 150); do

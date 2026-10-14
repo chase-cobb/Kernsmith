@@ -1,6 +1,6 @@
 # StbTrueType
 
-Managed-only rasterizer backend for KernSmith using [StbTrueTypeSharp](https://github.com/StbSharp/StbTrueTypeSharp). No native dependencies -- verified on Windows, Linux x64, macOS, Android, and Blazor WASM, and suited to NativeAOT and serverless environments. iOS, Mac Catalyst, and Linux arm64 are expected to work but not yet verified -- see the [platform support table](../../README.md#platform-support).
+Managed-only rasterizer backend for KernSmith using [StbTrueTypeSharp](https://github.com/StbSharp/StbTrueTypeSharp). No native dependencies -- verified on Windows, Linux x64 and arm64, macOS, Android, and Blazor WASM, and suited to NativeAOT and serverless environments. iOS and Mac Catalyst are expected to work but not yet verified -- see the [platform support table](../../README.md#platform-support).
 
 ## Installation
 
