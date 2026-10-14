@@ -41,7 +41,7 @@ RasterizerBackend enum:
 
 | Capability | FreeType | GDI | DirectWrite | StbTrueType | Native |
 |---|---|---|---|---|---|
-| **Platform** | Cross-platform (Windows, Linux x64, macOS, Android) | Windows only | Windows only | Cross-platform (Windows, Linux, macOS, Android, WASM) | Cross-platform (Windows, Linux, macOS, Android) |
+| **Platform** | Cross-platform (Windows, Linux x64, macOS, Android) | Windows only | Windows only | Cross-platform (Windows, Linux x64 and arm64, macOS, Android, iOS simulator, Mac Catalyst; builds for Blazor WASM) | Cross-platform (Windows, Linux x64 and arm64, macOS, Android, iOS simulator, Mac Catalyst) |
 | **NuGet package** | `KernSmith.Rasterizers.FreeType` | `KernSmith.Rasterizers.Gdi` | `KernSmith.Rasterizers.DirectWrite.TerraFX` | `KernSmith.Rasterizers.StbTrueType` | none (not published) |
 | **Color fonts** (COLR/CPAL, CBDT/CBLC, sbix) | Yes | No | No (stubbed, no impl yet) | No | No |
 | **Variable fonts** (fvar axes) | Yes | No | No (stubbed, no impl yet) | No | No |
