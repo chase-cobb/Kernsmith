@@ -69,7 +69,7 @@ RasterizerBackend enum:
 
 **Strengths**:
 
-- Cross-platform: works on Windows, Linux x64, macOS, and Android (iOS pending verification; no native library for Linux arm64, Mac Catalyst, or WASM).
+- Cross-platform: works on Windows, Linux x64, macOS, and Android. No native library for Linux arm64, Mac Catalyst, or WASM; on iOS an app referencing it fails to link (FreeTypeSharp's static iOS library references libpng symbols nothing provides).
 - Full feature coverage: color fonts, variable fonts (fvar axis coordinates), SDF, outline stroke.
 - All four anti-alias modes: None, Grayscale, Light, LCD.
 - TTC font collection support via `faceIndex`.
@@ -136,12 +136,12 @@ RasterizerBackend enum:
 
 **Package**: `KernSmith.Rasterizers.StbTrueType` (separate NuGet, cross-platform TFMs: `net8.0`, `net10.0`).
 
-**When to use**: When you need a pure C# rasterizer with zero native dependencies. Required for Blazor WASM and for platforms with no FreeTypeSharp native library (Linux arm64, Mac Catalyst); suited to serverless and AOT deployments. Verified on Android; iOS is expected to work but not yet verified (see the README platform support table). Also useful when you want to avoid shipping platform-specific native binaries.
+**When to use**: When you need a pure C# rasterizer with zero native dependencies. Required for Blazor WASM and for platforms with no FreeTypeSharp native library (Linux arm64, Mac Catalyst); suited to serverless and AOT deployments. Verified on Android, iOS (simulator) and Mac Catalyst (full AOT); see the README platform support table. Also useful when you want to avoid shipping platform-specific native binaries.
 
 **Strengths**:
 
 - Pure managed C# -- no native dependencies, no `DllImport` or `LibraryImport`.
-- Cross-platform: works on Windows, Linux, macOS, Android, and Blazor WASM; other .NET AOT targets (iOS, Mac Catalyst) are expected to work but pending verification.
+- Cross-platform: works on Windows, Linux, macOS, Android, iOS, Mac Catalyst, and Blazor WASM.
 - Marked `IsTrimmable` and `IsAotCompatible` for WASM and Native AOT scenarios.
 - SDF rendering support via vendored stb_truetype SDF implementation.
 - Synthetic bold and italic simulation.

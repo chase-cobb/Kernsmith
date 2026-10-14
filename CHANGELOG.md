@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Platform smoke test (`tests/KernSmith.PlatformSmoke`): one app that generates fonts with the StbTrueType, FreeType and Native backends on desktop, Android, iOS and Mac Catalyst, run in CI by the new `mobile-smoke.yml` workflow (desktop on Windows/Linux/macOS, Android emulator, iOS simulator, Mac Catalyst).
-- `README.md` has a Platform Support table (platform × backend, marking what is verified versus expected) with mobile notes: register backends explicitly in trimmed/AOT apps, and load font bytes since there are no system fonts on mobile. Backend READMEs and docs no longer claim unverified iOS support.
+- Platform smoke test (`tests/KernSmith.PlatformSmoke`): one app that generates fonts with the StbTrueType, FreeType and Native backends on desktop, Android, iOS and Mac Catalyst, run in CI by the new `mobile-smoke.yml` workflow (desktop on Windows/Linux/macOS, Android emulator, iOS simulator, Mac Catalyst). iOS (simulator) and Mac Catalyst are verified for StbTrueType and Native. iOS apps must not reference `KernSmith.Rasterizers.FreeType`: FreeTypeSharp's static iOS library references libpng, so the app fails to link.
+- `README.md` has a Platform Support table (platform × backend, marking what is verified versus expected) with mobile notes: register backends explicitly in trimmed/AOT apps, and load font bytes since there are no system fonts on mobile. Backend READMEs and docs list iOS as verified for StbTrueType and Native.
 
 ### Fixed
 

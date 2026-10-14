@@ -4,6 +4,10 @@ A small app that proves KernSmith actually runs on a platform: it generates a bi
 
 It is not in `KernSmith.sln` because the mobile targets need the android/ios/maccatalyst workloads. Targets: `net10.0` and `net10.0-android` everywhere, plus `net10.0-ios` and `net10.0-maccatalyst` when built on macOS. Pass `-p:SmokeTarget=<tfm>` to restore and build only one target, so you only need that one workload.
 
+The iOS build leaves FreeType out (`KSMOKE_NO_FREETYPE` plus a conditional `ProjectReference`): FreeTypeSharp 3.1.0's static iOS `libfreetype.a` references libpng symbols that nothing provides, so any iOS app referencing the FreeType backend fails to link.
+
+The Apple workloads must match the installed Xcode. CI pins the ios/maccatalyst workloads with a rollback file to the line that matches the runner's Xcode, because the newest workload needs a newer Xcode than the runners have; bump the pin together with the runner image. Locally, if they don't match, the build error names the Xcode version the installed workload needs.
+
 **Always build Release.** That is where Android trims and iOS AOT-compiles; Debug hides exactly the failures this app exists to catch.
 
 ## Output
@@ -19,6 +23,8 @@ KSMOKE RESULT FAIL
 ```
 
 `SKIP` means the backend does not claim the capability; only `FAIL` fails the run. Look for `KSMOKE RESULT PASS`.
+
+Set `KSMOKE_EXPECT_FAIL` to a comma-separated list of backends known not to work on the platform (e.g. `KSMOKE_EXPECT_FAIL=FreeType`). Their failures report as `XFAIL` and don't count; a passing `generate` check reports `XPASS` and does count, so the support table can't go stale silently. CI uses it for FreeType on Linux arm64 and Mac Catalyst.
 
 ## Running
 
@@ -39,15 +45,18 @@ Builds Release, installs, launches, waits for `KSMOKE RESULT` in logcat (tag `KS
 **iOS simulator** (macOS + Xcode):
 
 ```bash
-bash tests/KernSmith.PlatformSmoke/run-ios-sim.sh        # Mono runtime
-bash tests/KernSmith.PlatformSmoke/run-ios-sim.sh --aot  # NativeAOT
+bash tests/KernSmith.PlatformSmoke/run-ios-sim.sh
 ```
+
+The simulator runs the Mono runtime; NativeAOT publish needs a device RID, so full AOT on Apple is exercised by Mac Catalyst and a real device.
 
 **Mac Catalyst** (macOS + Xcode):
 
 ```bash
-bash tests/KernSmith.PlatformSmoke/run-maccatalyst.sh
+KSMOKE_EXPECT_FAIL=FreeType bash tests/KernSmith.PlatformSmoke/run-maccatalyst.sh
 ```
+
+FreeType fails here (FreeTypeSharp ships no Mac Catalyst native), hence `KSMOKE_EXPECT_FAIL`.
 
 **iOS device** (macOS + Xcode, a connected iPhone, and an Apple developer account for signing):
 

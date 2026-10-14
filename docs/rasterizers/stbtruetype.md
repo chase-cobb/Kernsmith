@@ -1,6 +1,6 @@
 # StbTrueType
 
-Managed-only rasterizer backend for KernSmith using [StbTrueTypeSharp](https://github.com/StbSharp/StbTrueTypeSharp). No native dependencies -- verified on Windows, Linux x64 and arm64, macOS, Android, and Blazor WASM, and suited to NativeAOT and serverless environments. iOS and Mac Catalyst are expected to work but not yet verified -- see the [platform support table](../../README.md#platform-support).
+Managed-only rasterizer backend for KernSmith using [StbTrueTypeSharp](https://github.com/StbSharp/StbTrueTypeSharp). No native dependencies -- verified on Windows, Linux x64 and arm64, macOS, Android, iOS, Mac Catalyst, and Blazor WASM, and suited to NativeAOT and serverless environments -- see the [platform support table](../../README.md#platform-support).
 
 ## Installation
 
@@ -89,7 +89,7 @@ See the [rasterizers overview](index.md#native-aot-and-trimming) for more detail
 
 ## When to Use
 
-Use StbTrueType when you need bitmap font generation on platforms where native FreeType binaries are unavailable: Blazor WebAssembly, NativeAOT trimmed deployments, Linux arm64, Mac Catalyst, serverless containers, or any environment where zero native dependencies is a requirement. For full-featured rendering, use the FreeType backend instead. iOS is expected to work (pure managed code) but is not yet verified -- see the [platform support table](https://github.com/kaltinril/Kernsmith#platform-support).
+Use StbTrueType when you need bitmap font generation on platforms where native FreeType binaries are unavailable: Blazor WebAssembly, NativeAOT trimmed deployments, Linux arm64, Mac Catalyst, serverless containers, or any environment where zero native dependencies is a requirement. For full-featured rendering, use the FreeType backend instead (not on iOS, where it fails to link). See the [platform support table](https://github.com/kaltinril/Kernsmith#platform-support).
 
 ## Blazor WASM
 

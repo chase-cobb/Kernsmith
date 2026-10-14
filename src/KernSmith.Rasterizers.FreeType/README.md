@@ -10,10 +10,10 @@ This package provides a cross-platform rasterizer using FreeType. It supports co
 
 - **Windows, Linux x64, macOS** — supported.
 - **Android** — supported on arm64 and x86_64. The package's `build/`/`buildTransitive/` targets drop FreeTypeSharp's desktop Linux library from Android builds; without that (earlier package versions), NuGet's RID fallback packages it into the APK and x86_64 fails with `DllNotFoundException`.
-- **iOS** — expected, not yet verified.
+- **iOS** — unsupported. An iOS app that references this package fails to link, even if FreeType is never used: FreeTypeSharp 3.1.0's static iOS `libfreetype.a` references libpng symbols that nothing provides. Do not reference this package in iOS apps; use StbTrueType.
 - **Linux arm64, Mac Catalyst, Blazor WASM** — unsupported (FreeTypeSharp ships no native library); use StbTrueType.
 
-In trimmed or AOT apps (Android Release, iOS), register the backend explicitly with `RasterizerFactory.Register(RasterizerBackend.FreeType, () => new FreeTypeRasterizer())`. See the [platform support table](https://github.com/kaltinril/Kernsmith#platform-support).
+In trimmed or AOT apps (e.g. Android Release), register the backend explicitly with `RasterizerFactory.Register(RasterizerBackend.FreeType, () => new FreeTypeRasterizer())`. See the [platform support table](https://github.com/kaltinril/Kernsmith#platform-support).
 
 ## Usage
 

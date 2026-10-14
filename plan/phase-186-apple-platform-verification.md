@@ -1,14 +1,14 @@
 # Phase 186 — Apple Platform Verification (iOS, Mac Catalyst, macOS)
 
-> **Status**: Not started — needs a Mac (Vic)
+> **Status**: Mac Catalyst and iOS simulator verified by CI; real iPhone needs a Mac (Vic)
 > **Branch**: `feature/mobile-platform-smoke`
 > **Related**: [README platform support table](../README.md#platform-support), [platform smoke test](../tests/KernSmith.PlatformSmoke/README.md)
 
 ## Why
 
-HeckYeah_Chase asked whether KernSmith works on iOS. The README now has a platform × rasterizer table, but every iOS and Mac Catalyst cell is ⏳ (expected, not verified). Android was verified on Windows with the emulator. Apple platforms cannot be: the iOS Simulator and Xcode only run on macOS, and a Windows machine cannot build a runnable iOS app.
+HeckYeah_Chase asked whether KernSmith works on iOS. The README platform × rasterizer table now shows iOS StbTrueType and Native as ✅: the `ios-simulator` CI job (`macos-26`, iOS 26.4 simulator, iossimulator-arm64, Release, no JIT) passes both. The simulator does not reproduce a device's full ahead-of-time compilation, and the iOS Simulator and Xcode only run on macOS, so a Windows machine cannot do the device check.
 
-This phase turns the Apple ⏳ cells into ✅ or ❌, with evidence.
+This phase's remaining purpose is the real-iPhone confirmation (full device AOT) and the FreeType-on-iOS libpng follow-up.
 
 ## What is being tested
 
@@ -27,12 +27,12 @@ The output appears on the app's screen and on stdout. `SKIP` means the backend d
 | Target | StbTrueType | FreeType | Native |
 |---|:-:|:-:|:-:|
 | macOS desktop | pass | pass | pass |
-| iOS simulator | pass | **unknown** | pass |
-| iOS device | pass | **unknown** | pass |
-| Mac Catalyst | pass | **fail** (expected) | pass |
+| iOS simulator | **pass** (CI) | not built | **pass** (CI) |
+| iOS device | pass | not built | pass |
+| Mac Catalyst | **pass** (CI) | **fail** (CI) | **pass** (CI) |
 
-- **FreeType on iOS is the real question.** FreeTypeSharp ships FreeType for iOS as a static library. Our own extra bindings in `src/KernSmith.Rasterizers.FreeType/FreeTypeNative.cs` use `DllImport("freetype")`. On iOS, statically linked code is normally reached through `"__Internal"`, so the outline, variable-font and color-font calls may fail even if basic FreeType works. Whatever happens, report the exact exception.
-- **Mac Catalyst FreeType is expected to fail.** FreeTypeSharp has no Mac Catalyst native library. Confirming that is still useful.
+- **FreeType is left out of the iOS build.** An iOS app that references the FreeType backend fails to link: FreeTypeSharp 3.1.0's static iOS `libfreetype.a` references libpng symbols that nothing provides. The smoke app drops FreeType from its iOS build automatically, so iOS runs StbTrueType and Native only.
+- **Mac Catalyst is done.** CI ran it in Release with full AOT: StbTrueType and Native pass; FreeType fails because FreeTypeSharp has no Mac Catalyst native library.
 
 ## Setup (once)
 
@@ -59,7 +59,7 @@ Run in order and stop to report if anything is surprising.
 dotnet run --project tests/KernSmith.PlatformSmoke -c Release -f net10.0 -p:SmokeTarget=net10.0
 ```
 
-### 2. iOS simulator, default runtime
+### 2. iOS simulator (optional — CI runs this)
 
 ```bash
 bash tests/KernSmith.PlatformSmoke/run-ios-sim.sh
@@ -67,25 +67,17 @@ bash tests/KernSmith.PlatformSmoke/run-ios-sim.sh
 
 It builds, boots an iPhone simulator (or uses one that's already booted), installs, launches, and prints the `KSMOKE` lines. The exit code is 0 on pass.
 
-### 3. iOS simulator, NativeAOT
+### 3. Mac Catalyst (optional — CI runs this)
 
 ```bash
-bash tests/KernSmith.PlatformSmoke/run-ios-sim.sh --aot
+KSMOKE_EXPECT_FAIL=FreeType bash tests/KernSmith.PlatformSmoke/run-maccatalyst.sh
 ```
 
-This is closer to how a real device compiles the app.
+FreeType reports `XFAIL`; StbTrueType and Native should pass.
 
-### 4. Mac Catalyst
+### 4. Real iPhone (the one that matters)
 
-```bash
-bash tests/KernSmith.PlatformSmoke/run-maccatalyst.sh
-```
-
-Expect FreeType to fail here; that is the confirmation we want. The script exits non-zero because of it.
-
-### 5. Real iPhone (the one that matters most)
-
-The simulator doesn't reproduce a device's full ahead-of-time compilation, so this step is the final word for iOS.
+Steps 2 and 3 are automated in CI, so this is the essential step. The simulator doesn't reproduce a device's full ahead-of-time compilation, so a real device is the final word for iOS. It tests StbTrueType and Native; FreeType is excluded from the iOS build automatically.
 
 1. On the iPhone, turn on Developer Mode (Settings → Privacy & Security → Developer Mode) and connect it by cable.
 2. You need a signing identity. A free Apple ID works: add it in Xcode → Settings → Accounts. The simplest way to get a provisioning profile is to create an empty iOS app in Xcode with the same bundle ID and run it on the phone once.
@@ -110,12 +102,11 @@ Build failures that happen before the app runs are just as useful: paste the fir
 
 ## After the results
 
-- Kaltinril updates the README table, `COMPARISON.md`, the backend READMEs and `project_facts.md` from ⏳ to ✅/❌.
-- If FreeType fails on iOS, the likely fix is resolving our `"freetype"` imports to the main program on Apple platforms. It gets a failing smoke test first, then the fix, then a re-run here.
-- If FreeType on Mac Catalyst fails as expected, the smoke test marks it as an expected failure there so the CI job goes green.
-- The `ios-simulator` and `maccatalyst` jobs in `.github/workflows/mobile-smoke.yml` cover steps 2–4 automatically on every PR. The real-device step stays manual.
+- Kaltinril reflects the real-iPhone result in the README table footnote (and the iOS row, `COMPARISON.md`, the backend READMEs and `project_facts.md` if it fails).
+- Follow-up: investigate FreeType on iOS (the libpng link failure) — either supply a libpng for iOS or file an upstream FreeTypeSharp issue asking for an iOS build without PNG support or with libpng bundled.
+- The `ios-simulator` and `maccatalyst` jobs in `.github/workflows/mobile-smoke.yml` cover steps 2–3 automatically on every PR. The real-device step stays manual.
 
 ## Done when
 
-- Steps 1–5 have been run and reported.
-- The README platform table has no ⏳ left in the iOS or Mac Catalyst rows.
+- Step 4 (real iPhone) has been run and reported.
+- Its result is reflected in the README platform table's iOS footnote.

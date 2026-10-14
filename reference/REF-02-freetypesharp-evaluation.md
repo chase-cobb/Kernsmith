@@ -103,7 +103,7 @@ To get GPOS kerning pairs with FreeType, you must:
 | Linux | x64 | `libfreetype.so` |
 | macOS | universal? | `libfreetype.dylib` |
 | Android | arm64-v8a, armeabi-v7a, x86, x86_64 | `libfreetype.so` |
-| iOS | xcframework | static lib |
+| iOS | xcframework | static lib (fails to link -- see below) |
 | tvOS | xcframework | static lib |
 
 ### Package Size
@@ -118,6 +118,8 @@ To get GPOS kerning pairs with FreeType, you must:
 ### Notable Gaps
 - **No Linux ARM** (arm64) -- only x64
 - **No WASM/Blazor** support
+- **No Mac Catalyst** native -- fails at runtime with "Failed to load font: freetype"
+- **iOS static lib does not link** (3.1.0) -- `libfreetype.a` is built with FreeType's sfnt PNG-bitmap support (`Load_SBit_Png`) and references 20 libpng symbols (`_png_create_read_struct` etc.) that nothing provides, so any iOS app referencing the package fails to link even if FreeType is never called. Fixing it needs a libpng for iOS or an upstream FreeTypeSharp change.
 - **No Windows ARM32**
 
 ---

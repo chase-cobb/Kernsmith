@@ -4,7 +4,7 @@ A pure C# rasterizer backend for KernSmith using StbTrueTypeSharp.
 
 ## Overview
 
-This package provides a cross-platform rasterizer with zero native dependencies. It supports SDF rendering and runs on Windows, Linux, macOS, Android, Blazor WASM, and serverless environments. iOS and Mac Catalyst are expected to work but are not yet verified -- see the [platform support table](https://github.com/kaltinril/Kernsmith#platform-support).
+This package provides a cross-platform rasterizer with zero native dependencies. It supports SDF rendering and runs on Windows, Linux, macOS, Android, iOS, Mac Catalyst, Blazor WASM, and serverless environments -- see the [platform support table](https://github.com/kaltinril/Kernsmith#platform-support).
 
 **Platform**: Cross-platform (`net8.0`, `net10.0`). No native libraries required.
 

@@ -45,7 +45,7 @@
 - **Fully in-memory** -- entire pipeline runs without touching disk unless you call `ToFile()`
 - **Batch generation** -- parallel multi-font generation with font caching
 - **Pipeline metrics** -- stage-level timing breakdown for profiling
-- **Cross-platform** -- Windows, Linux, macOS, Android and Blazor WASM via .NET 8.0 and .NET 10.0; iOS and Mac Catalyst pending verification (see [Platform Support](#platform-support))
+- **Cross-platform** -- Windows, Linux, macOS, Android, iOS, Mac Catalyst and Blazor WASM via .NET 8.0 and .NET 10.0 (see [Platform Support](#platform-support))
 - **Pluggable rasterizers** -- swap rendering backends to match your platform and feature needs
 - **Hardened font parsing** -- bounds validation and resource limits for untrusted font files
 
@@ -91,19 +91,20 @@ var result = BmFont.Builder()
 | **Linux arm64** | ✅ | ❌ | ❌ | ❌ | ✅ |
 | **macOS** | ✅ | ✅ | ❌ | ❌ | ✅ |
 | **Android** | ✅ | ✅ ¹ | ❌ | ❌ | ✅ |
-| **iOS** | ⏳ | ⏳ ² | ❌ | ❌ | ⏳ |
-| **Mac Catalyst** | ⏳ | ❌ | ❌ | ❌ | ⏳ |
+| **iOS** ³ | ✅ | ❌ ² | ❌ | ❌ | ✅ |
+| **Mac Catalyst** | ✅ | ❌ | ❌ | ❌ | ✅ |
 | **Blazor WASM** | ✅ | ❌ | ❌ | ❌ | ⏳ |
 
 ✅ tested in CI or on a device/emulator &middot; ⏳ expected to work, not yet verified &middot; ❌ unsupported (no native library or Windows-only API)
 
 1. Android x86_64 (emulators, Chromebooks) needs the next `KernSmith.Rasterizers.FreeType` release, which carries the Android packaging fix (see [CHANGELOG](CHANGELOG.md)); earlier packages leak FreeTypeSharp's desktop Linux library into the APK and fail with `DllNotFoundException`. arm64 works in all versions.
-2. FreeTypeSharp ships a static iOS library; whether it binds under KernSmith's P/Invoke declarations is not yet verified. FreeTypeSharp has no native library for Linux arm64, Mac Catalyst, or WASM.
+2. An iOS app that references `KernSmith.Rasterizers.FreeType` fails to link, even if FreeType is never used: FreeTypeSharp 3.1.0's static iOS `libfreetype.a` references libpng symbols (`_png_create_read_struct` and others) that nothing provides. Do not reference the FreeType package in iOS apps; use StbTrueType or Native. FreeTypeSharp has no native library for Linux arm64, Mac Catalyst, or WASM.
+3. iOS is verified on the iOS simulator in CI (Release, no JIT); a real-iPhone confirmation is tracked in [phase 186](plan/phase-186-apple-platform-verification.md).
 
 Mobile notes:
 
 - **Register backends explicitly.** Android Release builds are trimmed and iOS is always AOT-compiled, so reflection-based auto-discovery cannot be relied on -- call `RasterizerFactory.Register(RasterizerBackend.StbTrueType, () => new StbTrueTypeRasterizer())` (and likewise for FreeType/Native) at startup. See [Native AOT and trimming](#native-aot-and-trimming).
-- **No system fonts.** `DefaultSystemFontProvider` returns no fonts on Android (and is not expected to on iOS); pass font bytes from an embedded resource or app asset instead of a family name.
+- **No system fonts.** `DefaultSystemFontProvider` returns no fonts on Android, iOS and Mac Catalyst; pass font bytes from an embedded resource or app asset instead of a family name.
 - The evidence for this table is the [platform smoke test](tests/KernSmith.PlatformSmoke/README.md), run per platform by the `mobile-smoke.yml` workflow.
 
 ### Blazor WASM
