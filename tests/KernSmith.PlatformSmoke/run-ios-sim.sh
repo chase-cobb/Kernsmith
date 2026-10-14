@@ -13,7 +13,7 @@ rid="iossimulator-$arch"
 
 # NativeAOT only applies on publish; the .app still lands in the normal bin folder.
 if [ "${1:-}" = "--aot" ]; then
-  dotnet publish "$here" -c Release -f net10.0-ios -p:SmokeTarget=net10.0-ios -p:RuntimeIdentifier="$rid" -p:PublishAot=true
+  dotnet publish "$here" -c Release -f net10.0-ios -p:SmokeTarget=net10.0-ios -p:RuntimeIdentifier="$rid" -p:SmokeAot=true
 else
   dotnet build "$here" -c Release -f net10.0-ios -p:SmokeTarget=net10.0-ios -p:RuntimeIdentifier="$rid"
 fi

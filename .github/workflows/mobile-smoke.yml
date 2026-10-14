@@ -83,8 +83,12 @@ jobs:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
+      # Pin the workload to the line that matches the runner's stable Xcode: the newest
+      # workload requires an Xcode the runners don't have yet. Bump with the runner image.
       - name: Install ios workload
-        run: dotnet workload install ios
+        run: |
+          echo '{"microsoft.net.sdk.ios": "26.5.10318/10.0.100"}' > rollback.json
+          dotnet workload install ios --from-rollback-file rollback.json
       - name: Smoke on iOS simulator (${{ matrix.runtime }})
         run: bash tests/KernSmith.PlatformSmoke/run-ios-sim.sh ${{ matrix.runtime == 'aot' && '--aot' || '' }}
 
@@ -99,7 +103,10 @@ jobs:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
+      # Pinned for the same reason as the ios job.
       - name: Install maccatalyst workload
-        run: dotnet workload install maccatalyst
+        run: |
+          echo '{"microsoft.net.sdk.maccatalyst": "26.5.10318/10.0.100"}' > rollback.json
+          dotnet workload install maccatalyst --from-rollback-file rollback.json
       - name: Smoke on Mac Catalyst
         run: bash tests/KernSmith.PlatformSmoke/run-maccatalyst.sh
