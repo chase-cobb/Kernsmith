@@ -1,7 +1,6 @@
 # Phase 186 — Apple Platform Verification (iOS, Mac Catalyst, macOS)
 
 > **Status**: Mac Catalyst and iOS simulator verified by CI; real iPhone needs a Mac (Vic)
-> **Branch**: `feature/mobile-platform-smoke`
 > **Related**: [README platform support table](../README.md#platform-support), [platform smoke test](../tests/KernSmith.PlatformSmoke/README.md)
 
 ## Why
@@ -41,10 +40,9 @@ The output appears on the app's screen and on stdout. `SKIP` means the backend d
    ```bash
    dotnet workload install ios maccatalyst
    ```
-3. Check out the branch:
+3. Clone the repo (the smoke app is on `main`):
    ```bash
    git clone https://github.com/kaltinril/Kernsmith.git && cd Kernsmith
-   git checkout feature/mobile-platform-smoke
    ```
 
 Always build **Release**. That is where iOS AOT-compiles and trims, which is what this phase exists to exercise.
