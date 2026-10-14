@@ -154,7 +154,7 @@ Also available: `FreeTypeSharp.UWP` for UWP targets.
 | Release cadence | ~2-3 releases per year |
 
 ### Open Issues Summary
-- Android 16KB page alignment (#33)
+- Android 16KB page alignment (#33) -- does not affect KernSmith: the 3.1.0 `.aar` libraries (arm64-v8a, x86_64) were verified to have 16KB-aligned LOAD segments. The only misaligned library was the desktop `runtimes/linux-x64` glibc `.so`, which NuGet RID fallback (android-x64 -> linux-x64) leaked into APKs; `KernSmith.Rasterizers.FreeType.targets` (packed to `build/` and `buildTransitive/`) now removes it from Android builds.
 - sbix support gap (#32)
 - Segfault with custom FT_StreamRec (#31)
 - DLL search path issues (#30)

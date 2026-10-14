@@ -1,0 +1,105 @@
+name: Platform Smoke
+
+# Runs tests/KernSmith.PlatformSmoke on every platform in the README support table.
+# Each job fails unless the app prints "KSMOKE RESULT PASS". Kept separate from ci.yml
+# because the mobile legs need extra workloads, emulators and simulators.
+
+on:
+  push:
+    branches: [main]
+    paths: ['src/**', 'tests/KernSmith.PlatformSmoke/**', 'tests/KernSmith.Tests/Fixtures/**', '.github/workflows/mobile-smoke.yml', 'Directory.*.props', 'global.json']
+  pull_request:
+    branches: [main]
+    paths: ['src/**', 'tests/KernSmith.PlatformSmoke/**', 'tests/KernSmith.Tests/Fixtures/**', '.github/workflows/mobile-smoke.yml', 'Directory.*.props', 'global.json']
+  workflow_dispatch:
+
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, ubuntu-24.04-arm, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - name: Smoke (${{ matrix.os }})
+        shell: bash
+        run: |
+          set -o pipefail
+          # SmokeTarget: restore only net10.0 so no mobile workload is needed.
+          dotnet run --project tests/KernSmith.PlatformSmoke -c Release -f net10.0 -p:SmokeTarget=net10.0 | tee smoke.log
+        # Linux arm64 has no FreeTypeSharp native, so FreeType is expected to fail there;
+        # the log still documents StbTrueType/Native. Everything else must pass.
+        continue-on-error: ${{ matrix.os == 'ubuntu-24.04-arm' }}
+
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: microsoft
+          java-version: '21'
+      - name: Install android workload
+        run: dotnet workload install android
+      - name: Install Android SDK dependencies
+        run: dotnet build tests/KernSmith.PlatformSmoke -t:InstallAndroidDependencies -f net10.0-android -p:SmokeTarget=net10.0-android -p:AndroidSdkDirectory="$ANDROID_HOME" -p:AcceptAndroidSDKLicenses=true
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Smoke on emulator (API 34, x86_64)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          script: bash tests/KernSmith.PlatformSmoke/run-android.sh
+
+  ios-simulator:
+    strategy:
+      fail-fast: false
+      matrix:
+        # mono = the default iOS runtime; aot = NativeAOT, closest to a device's full AOT.
+        runtime: [mono, aot]
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Install ios workload
+        run: dotnet workload install ios
+      - name: Smoke on iOS simulator (${{ matrix.runtime }})
+        run: bash tests/KernSmith.PlatformSmoke/run-ios-sim.sh ${{ matrix.runtime == 'aot' && '--aot' || '' }}
+
+  maccatalyst:
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Install maccatalyst workload
+        run: dotnet workload install maccatalyst
+      - name: Smoke on Mac Catalyst
+        run: bash tests/KernSmith.PlatformSmoke/run-maccatalyst.sh

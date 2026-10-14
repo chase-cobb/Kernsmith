@@ -45,7 +45,7 @@
 - **Fully in-memory** -- entire pipeline runs without touching disk unless you call `ToFile()`
 - **Batch generation** -- parallel multi-font generation with font caching
 - **Pipeline metrics** -- stage-level timing breakdown for profiling
-- **Cross-platform** -- Windows, Linux, macOS via .NET 8.0 and .NET 10.0
+- **Cross-platform** -- Windows, Linux, macOS, Android and Blazor WASM via .NET 8.0 and .NET 10.0; iOS and Mac Catalyst pending verification (see [Platform Support](#platform-support))
 - **Pluggable rasterizers** -- swap rendering backends to match your platform and feature needs
 - **Hardened font parsing** -- bounds validation and resource limits for untrusted font files
 
@@ -55,7 +55,7 @@ KernSmith supports pluggable rasterizer backends. Install at least one backend p
 
 | Backend | Platform | Hinting | Color Fonts | Variable Fonts | SDF | Notes |
 |---------|----------|---------|-------------|-----------------|-----|-------|
-| **FreeType**<br>[![NuGet](https://img.shields.io/nuget/v/KernSmith.Rasterizers.FreeType.svg?label=&color=blue)](https://www.nuget.org/packages/KernSmith.Rasterizers.FreeType) | Windows, Linux, macOS | Yes (native bytecode + autohint fallback) | Yes | Yes | Yes | Cross-platform, full feature support. Default choice unless you have a platform- or environment-specific reason to pick another backend. |
+| **FreeType**<br>[![NuGet](https://img.shields.io/nuget/v/KernSmith.Rasterizers.FreeType.svg?label=&color=blue)](https://www.nuget.org/packages/KernSmith.Rasterizers.FreeType) | Windows, Linux x64, macOS, Android | Yes (native bytecode + autohint fallback) | Yes | Yes | Yes | Cross-platform, full feature support. Default choice unless you have a platform- or environment-specific reason to pick another backend. |
 | **GDI**<br>[![NuGet](https://img.shields.io/nuget/v/KernSmith.Rasterizers.Gdi.svg?label=&color=blue)](https://www.nuget.org/packages/KernSmith.Rasterizers.Gdi) | Windows only | Yes (native Windows hinting) | No | No | No | Matches BMFont reference output for pixel-perfect parity. |
 | **DirectWrite**<br>[![NuGet](https://img.shields.io/nuget/v/KernSmith.Rasterizers.DirectWrite.TerraFX.svg?label=&color=blue)](https://www.nuget.org/packages/KernSmith.Rasterizers.DirectWrite.TerraFX) | Windows only | Yes (natural/symmetric hinting) | No | No | No | Modern Windows rendering. Color and variable fonts are not yet implemented; use FreeType for those. |
 | **StbTrueType**<br>[![NuGet](https://img.shields.io/nuget/v/KernSmith.Rasterizers.StbTrueType.svg?label=&color=blue)](https://www.nuget.org/packages/KernSmith.Rasterizers.StbTrueType) | Cross-platform | No | No | No | Yes | Pure C#, no native dependencies. Ideal for WASM, AOT, serverless. No hinting engine, so small sizes with `AntiAlias.None` can look rough on thin stems -- prefer `AntiAlias.Grayscale` or raise `SuperSample` for crisper small-size text. |
@@ -82,6 +82,30 @@ var result = BmFont.Builder()
     .Build();
 ```
 
+### Platform Support
+
+| Platform | StbTrueType | FreeType | GDI | DirectWrite | Native (experimental) |
+|----------|:-----------:|:--------:|:---:|:-----------:|:---------------------:|
+| **Windows** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Linux x64** | ✅ | ✅ | ❌ | ❌ | ✅ |
+| **Linux arm64** | ⏳ | ❌ | ❌ | ❌ | ⏳ |
+| **macOS** | ✅ | ✅ | ❌ | ❌ | ✅ |
+| **Android** | ✅ | ✅ ¹ | ❌ | ❌ | ✅ |
+| **iOS** | ⏳ | ⏳ ² | ❌ | ❌ | ⏳ |
+| **Mac Catalyst** | ⏳ | ❌ | ❌ | ❌ | ⏳ |
+| **Blazor WASM** | ✅ | ❌ | ❌ | ❌ | ⏳ |
+
+✅ tested in CI or on a device/emulator &middot; ⏳ expected to work, not yet verified &middot; ❌ unsupported (no native library or Windows-only API)
+
+1. Android x86_64 (emulators, Chromebooks) needs the next `KernSmith.Rasterizers.FreeType` release, which carries the Android packaging fix (see [CHANGELOG](CHANGELOG.md)); earlier packages leak FreeTypeSharp's desktop Linux library into the APK and fail with `DllNotFoundException`. arm64 works in all versions.
+2. FreeTypeSharp ships a static iOS library; whether it binds under KernSmith's P/Invoke declarations is not yet verified. FreeTypeSharp has no native library for Linux arm64, Mac Catalyst, or WASM.
+
+Mobile notes:
+
+- **Register backends explicitly.** Android Release builds are trimmed and iOS is always AOT-compiled, so reflection-based auto-discovery cannot be relied on -- call `RasterizerFactory.Register(RasterizerBackend.StbTrueType, () => new StbTrueTypeRasterizer())` (and likewise for FreeType/Native) at startup. See [Native AOT and trimming](#native-aot-and-trimming).
+- **No system fonts.** `DefaultSystemFontProvider` returns no fonts on Android (and is not expected to on iOS); pass font bytes from an embedded resource or app asset instead of a family name.
+- The evidence for this table is the [platform smoke test](tests/KernSmith.PlatformSmoke/README.md), run per platform by the `mobile-smoke.yml` workflow.
+
 ### Blazor WASM
 
 KernSmith runs entirely client-side in Blazor WebAssembly using the StbTrueType backend. See the [Blazor WASM sample](samples/KernSmith.Samples.BlazorWasm/) for a working example.
@@ -103,15 +127,18 @@ AOT compilation (`RunAOTCompilation=true`) is recommended for production perform
 
 ### Native AOT and trimming
 
-Backend auto-discovery is reflection-based and **does not work under Native AOT or trimming** -- the backend may be trimmed away or cannot be resolved by name, so generation fails with a "backend is not registered" error. You must register a backend explicitly. Use **StbTrueType**, the only AOT-compatible backend (pure C#, no native dependencies):
+Backend auto-discovery is reflection-based and **does not work under Native AOT or trimming** -- the backend may be trimmed away or cannot be resolved by name, so generation fails with a "backend is not registered" error. You must register a backend explicitly. **StbTrueType** is the recommended choice (pure C#, no native dependencies):
 
 ```csharp
-using System.Runtime.CompilerServices;
+using KernSmith;
+using KernSmith.Rasterizer;
 using KernSmith.Rasterizers.StbTrueType;
 
-// Force the backend to load and register; the typeof reference prevents trimming.
-RuntimeHelpers.RunClassConstructor(typeof(StbTrueTypeRasterizer).TypeHandle);
+// Register at startup; the direct constructor reference keeps the backend from being trimmed.
+RasterizerFactory.Register(RasterizerBackend.StbTrueType, () => new StbTrueTypeRasterizer());
 ```
+
+The same pattern works for FreeType and the experimental Native backend; FreeType additionally needs its native library on the target platform (see [Platform Support](#platform-support)).
 
 See the [rasterizers documentation](https://kaltinril.github.io/Kernsmith/docs/rasterizers/) for details.
 

@@ -55,6 +55,10 @@ Source of truth for statements about the project. One short fact per line. Updat
 - The regression harness exercises the CLI `GenerateAll` path only, not the UI `GenerationService`; verify UI-generation changes separately.
 - `GenerateAll` skips a (config, backend) pair when the backend declines a capability the config requests — e.g. SDF on GDI/DirectWrite/Native.
 - `dotnet run` exits 1 for **both** a build failure and a partial generation, so the two must be distinguished by building as a separate step.
+- `tests/KernSmith.PlatformSmoke` is deliberately **not** in `KernSmith.sln`: its mobile TFMs need the android/ios/maccatalyst workloads, which the normal CI legs don't install. It builds `net10.0;net10.0-android`, adding `net10.0-ios;net10.0-maccatalyst` only on macOS; `-p:SmokeTarget=<tfm>` narrows it to one target. Only `.github/workflows/mobile-smoke.yml` and the `run-*.sh` scripts build it, always in Release (trimming/AOT).
+- Building the Android leg locally needs Android SDK platform API 36: `dotnet build tests/KernSmith.PlatformSmoke -t:InstallAndroidDependencies -f net10.0-android -p:SmokeTarget=net10.0-android -p:AndroidSdkDirectory=<sdk>`.
+- Android RID fallback gotcha: NuGet maps android-x64 -> linux-x64, so FreeTypeSharp's desktop glibc `runtimes/linux-x64/libfreetype.so` overrides the Android `.so` from its `.aar` and x86_64 fails with `DllNotFoundException` (`libm.so.6`). `src/KernSmith.Rasterizers.FreeType/buildTransitive/KernSmith.Rasterizers.FreeType.targets` (packed to `build/` and `buildTransitive/`) removes FreeTypeSharp `NativeCopyLocalItems` on Android; project references must `<Import>` it explicitly. With it, every packaged `libfreetype.so` is 16KB-aligned.
+- Platform verification: Android (API 34 emulator, x86_64 + arm64, Release, `TrimMode=full`) passes StbTrueType, FreeType and Native. iOS and Mac Catalyst are unverified pending the first `mobile-smoke.yml` run; risks are FreeType on iOS (FreeTypeSharp ships a static xcframework while `FreeTypeNative.cs` uses `DllImport("freetype")`, not `"__Internal"`) and FreeTypeSharp 3.1.0 having no Mac Catalyst native. `DefaultSystemFontProvider` returns 0 fonts on Android (no throw).
 - Local NuGet validation needs `packageSourceMapping`: route `KernSmith*` to the local feed and `*` to nuget.org in the consumer `nuget.config`.
 
 ## CodeQL
@@ -76,5 +80,7 @@ Source of truth for statements about the project. One short fact per line. Updat
 | Tests | `tests/KernSmith.Tests/` |
 | Test font fixture | `tests/KernSmith.Tests/Fixtures/Roboto-Regular.ttf` |
 | Regression/output comparison | `tests/bmfont-compare/regression_check.py` |
+| Platform smoke test (desktop/Android/iOS/Mac Catalyst) | `tests/KernSmith.PlatformSmoke/` |
+| FreeType Android packaging fix | `src/KernSmith.Rasterizers.FreeType/buildTransitive/KernSmith.Rasterizers.FreeType.targets` |
 | CI/CD | `.github/workflows/` |
 | Docs site | kaltinril.github.io/Kernsmith |

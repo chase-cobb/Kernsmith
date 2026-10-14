@@ -41,7 +41,7 @@ RasterizerBackend enum:
 
 | Capability | FreeType | GDI | DirectWrite | StbTrueType | Native |
 |---|---|---|---|---|---|
-| **Platform** | Cross-platform (Windows, Linux, macOS) | Windows only | Windows only | Cross-platform (Windows, Linux, macOS, WASM) | Cross-platform (Windows, Linux, macOS, WASM) |
+| **Platform** | Cross-platform (Windows, Linux x64, macOS, Android) | Windows only | Windows only | Cross-platform (Windows, Linux, macOS, Android, WASM) | Cross-platform (Windows, Linux, macOS, Android) |
 | **NuGet package** | `KernSmith.Rasterizers.FreeType` | `KernSmith.Rasterizers.Gdi` | `KernSmith.Rasterizers.DirectWrite.TerraFX` | `KernSmith.Rasterizers.StbTrueType` | none (not published) |
 | **Color fonts** (COLR/CPAL, CBDT/CBLC, sbix) | Yes | No | No (stubbed, no impl yet) | No | No |
 | **Variable fonts** (fvar axes) | Yes | No | No (stubbed, no impl yet) | No | No |
@@ -65,11 +65,11 @@ RasterizerBackend enum:
 
 **Package**: `KernSmith.Rasterizers.FreeType` (via FreeTypeSharp 3.1.0).
 
-**When to use**: Default choice for all platforms. Required when you need color fonts, variable fonts, SDF output, or outline stroke effects.
+**When to use**: Default choice on every platform where FreeTypeSharp ships a native library (see the README platform support table). Required when you need color fonts, variable fonts, SDF output, or outline stroke effects.
 
 **Strengths**:
 
-- Cross-platform: works on Windows, Linux, and macOS.
+- Cross-platform: works on Windows, Linux x64, macOS, and Android (iOS pending verification; no native library for Linux arm64, Mac Catalyst, or WASM).
 - Full feature coverage: color fonts, variable fonts (fvar axis coordinates), SDF, outline stroke.
 - All four anti-alias modes: None, Grayscale, Light, LCD.
 - TTC font collection support via `faceIndex`.
@@ -136,12 +136,12 @@ RasterizerBackend enum:
 
 **Package**: `KernSmith.Rasterizers.StbTrueType` (separate NuGet, cross-platform TFMs: `net8.0`, `net10.0`).
 
-**When to use**: When you need a pure C# rasterizer with zero native dependencies. Required for Blazor WASM, iOS AOT, and serverless environments where native P/Invoke is unavailable. Also useful when you want to avoid shipping platform-specific native binaries.
+**When to use**: When you need a pure C# rasterizer with zero native dependencies. Required for Blazor WASM and for platforms with no FreeTypeSharp native library (Linux arm64, Mac Catalyst); suited to serverless and AOT deployments. Verified on Android; iOS is expected to work but not yet verified (see the README platform support table). Also useful when you want to avoid shipping platform-specific native binaries.
 
 **Strengths**:
 
 - Pure managed C# -- no native dependencies, no `DllImport` or `LibraryImport`.
-- Cross-platform: works on Windows, Linux, macOS, Blazor WASM, and any .NET AOT target.
+- Cross-platform: works on Windows, Linux, macOS, Android, and Blazor WASM; other .NET AOT targets (iOS, Mac Catalyst) are expected to work but pending verification.
 - Marked `IsTrimmable` and `IsAotCompatible` for WASM and Native AOT scenarios.
 - SDF rendering support via vendored stb_truetype SDF implementation.
 - Synthetic bold and italic simulation.

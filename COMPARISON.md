@@ -194,20 +194,22 @@ KernSmith supports five pluggable rasterizer backends. Each has different platfo
 | | FreeType | GDI | DirectWrite | StbTrueType | Native |
 |---|:---:|:---:|:---:|:---:|:---:|
 | **Windows** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Linux** | ✅ | ❌ | ❌ | ✅ | ✅ |
+| **Linux x64** | ✅ | ❌ | ❌ | ✅ | ✅ |
+| **Linux arm64** | ❌ | ❌ | ❌ | ⏳ | ⏳ |
 | **macOS** | ✅ | ❌ | ❌ | ✅ | ✅ |
-| **Blazor WASM** | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Blazor WASM** | ❌ | ❌ | ❌ | ✅ | ⏳ |
 | **NativeAOT** | ⚠️ | ⚠️ | ⚠️ | ✅ | ✅ |
 | **Android** | ✅ | ❌ | ❌ | ✅ | ✅ |
-| **iOS** | ⚠️ | ❌ | ❌ | ✅ | ✅ |
+| **iOS** | ⏳ | ❌ | ❌ | ⏳ | ⏳ |
+| **Mac Catalyst** | ❌ | ❌ | ❌ | ⏳ | ⏳ |
 | **Serverless / Containers** | ✅ | ❌ | ❌ | ✅ | ✅ |
-| **Console (Xbox/PS/Switch)** | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **Console (Xbox/PS/Switch)** | ❌ | ❌ | ❌ | ⏳ | ⏳ |
 | **Native Dependencies** | FreeType native libs | Win32 GDI | Win32 DirectWrite | None | None |
 | **Trimming Safe** | ⚠️ | N/A | N/A | ✅ | ✅ |
 | **AOT Compatible** | ⚠️ | N/A | N/A | ✅ | ✅ |
 | **Published on NuGet** | ✅ | ✅ | ✅ | ✅ | ❌ |
 
-Native's platform rows follow from it being pure managed code with no native dependencies (it is marked `IsTrimmable`/`IsAotCompatible`); the WASM, console, and mobile targets have not been exercised for it yet. StbTrueType remains the recommended managed backend for those environments.
+Native's platform rows follow from it being pure managed code with no native dependencies (it is marked `IsTrimmable`/`IsAotCompatible`); Android has been verified by the platform smoke test, but the WASM, console, and Apple targets have not been exercised for it yet. StbTrueType remains the recommended managed backend for those environments. ⏳ = expected but not yet verified; see the [README platform support table](README.md#platform-support) for what the platform smoke test has confirmed.
 
 ### Feature Support
 
@@ -237,7 +239,7 @@ WOFF1 is decompressed by KernSmith core before rasterization, so all backends ac
 - **FreeType** -- Default for most use cases. Cross-platform, full-featured, industry-standard quality.
 - **GDI** -- Pixel-perfect BMFont.exe compatibility on Windows. Use for validating against BMFont reference output.
 - **DirectWrite** -- Windows system-font loading with ClearType-hinted grayscale rendering. High-quality Windows text output. (For color fonts or variable fonts, use FreeType.)
-- **StbTrueType** -- Blazor WASM, NativeAOT, iOS, consoles, or anywhere native libraries are unavailable. Pure C#, zero dependencies.
+- **StbTrueType** -- Blazor WASM, NativeAOT, consoles, iOS (expected, not yet verified), or anywhere native libraries are unavailable. Pure C#, zero dependencies.
 - **Native** -- Experimental. Plain TrueType text with no third-party code at all, when you are building from source and can live without hinting, SDF, stroke, or synthetic styles. Not published to NuGet; use StbTrueType for shipping managed-only builds.
 
 ## Tool Descriptions

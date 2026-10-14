@@ -317,7 +317,7 @@ List available rasterizer backends on the current platform. Shows each backend's
 kernsmith list-rasterizers
 ```
 
-FreeType is the default backend and is available on all platforms. The GDI and DirectWrite backends are Windows-only alternatives.
+FreeType is the default backend and is available on Windows, Linux x64, and macOS (not Linux arm64 -- use StbTrueType there; see the [platform support table](../../README.md#platform-support)). The GDI and DirectWrite backends are Windows-only alternatives.
 
 ```bash
 kernsmith list-rasterizers
