@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- With `AntiAlias = None`, `Outline = N` now gives N fully opaque pixels around the glyph (a hard round threshold) instead of N-1 solid rings plus a 50% alpha ring. The soft ramp is unchanged when anti-aliasing is on. (#239)
+
 ## [0.23.0] - 2026-10-14
 
 ### Added

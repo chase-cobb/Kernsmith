@@ -517,7 +517,8 @@ internal sealed class PreparedRasterization : IDisposable
         // (ShouldApplyChannelConfig false), the outline is baked into the composite as usual.
         if (options.Outline > 0 && !BmFont.ShouldApplyChannelConfig(options))
         {
-            effects.Add(new OutlineEffect(options.Outline, options.OutlineR, options.OutlineG, options.OutlineB));
+            effects.Add(new OutlineEffect(options.Outline, options.OutlineR, options.OutlineG, options.OutlineB,
+                smooth: options.AntiAlias != AntiAliasMode.None));
         }
         else if (options.PostProcessors != null)
         {
@@ -525,7 +526,8 @@ internal sealed class PreparedRasterization : IDisposable
             {
                 if (pp is OutlinePostProcessor op && op.OutlineWidth > 0)
                 {
-                    effects.Add(new OutlineEffect(op.OutlineWidth, op.OutlineR, op.OutlineG, op.OutlineB));
+                    effects.Add(new OutlineEffect(op.OutlineWidth, op.OutlineR, op.OutlineG, op.OutlineB,
+                        smooth: op.Smooth && options.AntiAlias != AntiAliasMode.None));
                     break;
                 }
             }

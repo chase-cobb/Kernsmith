@@ -19,12 +19,20 @@ internal sealed class OutlineEffect : IGlyphEffect
     private readonly byte _outlineG;
     private readonly byte _outlineB;
 
-    public OutlineEffect(int outlineWidth, byte outlineR = 0, byte outlineG = 0, byte outlineB = 0)
+    private readonly bool _smooth;
+
+    /// <summary>
+    /// Creates the effect. <paramref name="smooth"/> true gives the soft anti-aliased ring; false
+    /// (AntiAlias = None) gives a hard threshold: pixels within <paramref name="outlineWidth"/> of
+    /// the glyph are fully opaque, the rest transparent.
+    /// </summary>
+    public OutlineEffect(int outlineWidth, byte outlineR = 0, byte outlineG = 0, byte outlineB = 0, bool smooth = true)
     {
         _outlineWidth = outlineWidth;
         _outlineR = outlineR;
         _outlineG = outlineG;
         _outlineB = outlineB;
+        _smooth = smooth;
     }
 
     public GlyphLayer Generate(byte[] alphaData, int width, int height, int pitch, GlyphMetrics metrics)
@@ -92,9 +100,18 @@ internal sealed class OutlineEffect : IGlyphEffect
                     else
                     {
                         // Exterior or counter: distance-based anti-aliased ring.
-                        var dist = MathF.Sqrt(squaredDist[pixelIdx]);
-                        // Smooth falloff: fully opaque up to ow, then linear fade over 1.5 pixels.
-                        var outlineAlpha = Math.Clamp(255f * (ow + 0.75f - dist) / 1.5f, 0f, 255f);
+                        float outlineAlpha;
+                        if (_smooth)
+                        {
+                            var dist = MathF.Sqrt(squaredDist[pixelIdx]);
+                            // Smooth falloff: fully opaque up to ow, then linear fade over 1.5 pixels.
+                            outlineAlpha = Math.Clamp(255f * (ow + 0.75f - dist) / 1.5f, 0f, 255f);
+                        }
+                        else
+                        {
+                            // No anti-aliasing: hard threshold so Outline = N is exactly N solid pixels.
+                            outlineAlpha = squaredDist[pixelIdx] <= (float)ow * ow ? 255f : 0f;
+                        }
 
                         if (outlineAlpha <= 0)
                             continue;
