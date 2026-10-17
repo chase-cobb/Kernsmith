@@ -575,16 +575,15 @@ The rasterization pipeline differs at every stage: outline interpretation, scan 
 ### EDT (Euclidean Distance Transform) --- Current KernSmith Default
 
 - Computes distance from each pixel to nearest glyph edge
-- Outline alpha = `clamp(outlineWidth - distance + 0.5, 0, 255)`
-- Anti-aliased, smooth results
+- Outline alpha with anti-aliasing on (`OutlineEffect`) = `clamp(255 * (outlineWidth + 0.75 - distance) / 1.5, 0, 255)`, a soft 1.5px ramp centered on `distance == outlineWidth`
+- With `AntiAlias = None` the alpha is a hard threshold: 255 if `distance <= outlineWidth`, otherwise 0, so `Outline = N` gives exactly N opaque pixels (round, Euclidean)
 - EDT expands bidirectionally — both outward and into letter counters
 
 ### Outline Counter Protection
 
-- BFS flood-fill from image edges through zero-alpha pixels identifies true exterior pixels
-- Counter pixels (zero-alpha but unreachable from edges) are excluded from outline rendering
-- Applied in OutlineEffect.cs between EDT computation and RGBA output generation
-- Fixes the counter-fill problem at large sizes with thick outlines
+- No flood-fill: the falloff reaches zero beyond ~`outlineWidth` pixels from the glyph core, so the open center of a large counter stays transparent on its own
+- Pixels near an inner stroke wall get an inner outline ring
+- Applied in OutlineEffect.cs when building the RGBA output from the EDT
 
 ### FT_Stroker (FreeType Native) --- Implemented but Disabled
 
