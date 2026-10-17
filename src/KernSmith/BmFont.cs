@@ -267,7 +267,10 @@ public static class BmFont
             // instead the Outline-content channels fall back to glyph coverage in the compositor.
             if (needsOutline && options.Outline > 0)
             {
-                var outlineProcessor = new OutlinePostProcessor(options.Outline, options.OutlineR, options.OutlineG, options.OutlineB);
+                var outlineProcessor = new OutlinePostProcessor(options.Outline, options.OutlineR, options.OutlineG, options.OutlineB)
+                {
+                    Smooth = options.AntiAlias != AntiAliasMode.None
+                };
                 channelOutlineGlyphs = glyphs.Select(g => outlineProcessor.Process(g)).ToList();
             }
 

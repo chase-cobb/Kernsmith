@@ -20,6 +20,9 @@ public sealed class OutlinePostProcessor : IGlyphPostProcessor
     internal byte OutlineG => _outlineG;
     internal byte OutlineB => _outlineB;
 
+    /// <summary>False when anti-aliasing is off: the outline is a hard 0/255 threshold instead of a soft ramp.</summary>
+    internal bool Smooth { get; init; } = true;
+
     /// <summary>
     /// Creates an outline effect with the given thickness and color.
     /// </summary>
@@ -93,9 +96,18 @@ public sealed class OutlinePostProcessor : IGlyphPostProcessor
         {
             for (var x = 0; x < dstW; x++)
             {
-                var dist = MathF.Sqrt(squaredDist[y * dstW + x]);
-                // Anti-aliased outline alpha: smooth transition at the outer edge.
-                var outlineAlpha = Math.Clamp(255f * (ow - dist + 0.5f), 0f, 255f);
+                float outlineAlpha;
+                if (Smooth)
+                {
+                    var dist = MathF.Sqrt(squaredDist[y * dstW + x]);
+                    // Anti-aliased outline alpha: smooth transition at the outer edge.
+                    outlineAlpha = Math.Clamp(255f * (ow - dist + 0.5f), 0f, 255f);
+                }
+                else
+                {
+                    // No anti-aliasing: hard threshold so the outline is exactly ow solid pixels.
+                    outlineAlpha = squaredDist[y * dstW + x] <= (float)ow * ow ? 255f : 0f;
+                }
 
                 if (outlineAlpha <= 0)
                     continue;

@@ -70,6 +70,92 @@ public class OutlineEffectTests
         center.ShouldBe((byte)0, "the open center of a large counter must not be flooded");
     }
 
+    /// <summary>A single opaque pixel at the center of a 3x3 source: every outline pixel's distance is its offset.</summary>
+    private static byte[] MakeSinglePixel() => [0, 0, 0, 0, 255, 0, 0, 0, 0];
+
+    private static byte[] LayerAlphas(GlyphLayer layer)
+    {
+        var alphas = new byte[layer.Width * layer.Height];
+        for (var i = 0; i < alphas.Length; i++)
+            alphas[i] = layer.RgbaData[i * 4 + 3];
+        return alphas;
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void Generate_NoSmoothing_OutlineIsBinaryAndFullyOpaqueAtExactWidth(int ow)
+    {
+        // Arrange -- one pixel; with smoothing off, every outline pixel must be 0 or 255.
+        var metrics = new GlyphMetrics(BearingX: 0, BearingY: 0, Advance: 3, Width: 3, Height: 3);
+
+        // Act
+        var layer = new OutlineEffect(ow, smooth: false).Generate(MakeSinglePixel(), 3, 3, 3, metrics);
+
+        // Assert
+        var alphas = LayerAlphas(layer);
+        alphas.ShouldAllBe(a => a == 0 || a == 255, "no partial-alpha ring when anti-aliasing is off");
+
+        // Pixel exactly ow away on the axis is fully opaque (was 127 with the 1.5px ramp).
+        var cx = 1 + ow;
+        var cy = 1 + ow;
+        alphas[cy * layer.Width + cx + ow].ShouldBe((byte)255, "pixel at distance == ow must be solid");
+        // One further out is transparent.
+        alphas[cy * layer.Width + cx + ow + 1].ShouldBe((byte)0);
+    }
+
+    [Fact]
+    public void Generate_NoSmoothing_DiagonalFollowsEuclideanDistance()
+    {
+        var metrics = new GlyphMetrics(BearingX: 0, BearingY: 0, Advance: 3, Width: 3, Height: 3);
+
+        // ow=1: diagonal neighbour is sqrt(2) > 1 away -> transparent (round outline).
+        var ow1 = new OutlineEffect(1, smooth: false).Generate(MakeSinglePixel(), 3, 3, 3, metrics);
+        LayerAlphas(ow1)[1 * ow1.Width + 1].ShouldBe((byte)0);
+
+        // ow=2: diagonal neighbour (sqrt(2)) is inside, (1,2) offset (sqrt(5) = 2.24) is outside.
+        var ow2 = new OutlineEffect(2, smooth: false).Generate(MakeSinglePixel(), 3, 3, 3, metrics);
+        var a2 = LayerAlphas(ow2);
+        a2[(3 - 1) * ow2.Width + (3 - 1)].ShouldBe((byte)255);
+        a2[(3 - 2) * ow2.Width + (3 - 1)].ShouldBe((byte)0);
+    }
+
+    [Fact]
+    public void Generate_Smoothing_StillUsesSoftRamp()
+    {
+        // Guards the default (smooth) look: the pixel at exactly ow away stays partially transparent.
+        var metrics = new GlyphMetrics(BearingX: 0, BearingY: 0, Advance: 3, Width: 3, Height: 3);
+
+        var layer = new OutlineEffect(1).Generate(MakeSinglePixel(), 3, 3, 3, metrics);
+
+        LayerAlphas(layer)[2 * layer.Width + 3].ShouldBe((byte)127);
+    }
+
+    [Fact]
+    public void OutlinePostProcessor_NoSmoothing_OutlineIsBinary()
+    {
+        var glyph = new RasterizedGlyph
+        {
+            Codepoint = 'L',
+            GlyphIndex = 0,
+            BitmapData = MakeSinglePixel(),
+            Width = 3,
+            Height = 3,
+            Pitch = 3,
+            Metrics = new GlyphMetrics(BearingX: 0, BearingY: 0, Advance: 3, Width: 3, Height: 3),
+            Format = PixelFormat.Grayscale8,
+        };
+
+        var result = new OutlinePostProcessor(1) { Smooth = false }.Process(glyph);
+
+        var alphas = new byte[result.Width * result.Height];
+        for (var i = 0; i < alphas.Length; i++)
+            alphas[i] = result.BitmapData[i * 4 + 3];
+        alphas.ShouldAllBe(a => a == 0 || a == 255);
+        alphas[2 * result.Width + 3].ShouldBe((byte)255, "pixel at distance == ow must be solid");
+    }
+
     [Fact]
     public void Generate_Donut_DrawsOuterRingOutsideGlyph()
     {
