@@ -149,6 +149,7 @@ kernsmith generate -f font.ttf -s 32 --no-pot --packer skyline
 | Flag | Description |
 |------|-------------|
 | `--outline <n>[,color]` | Outline width in pixels, optional hex color |
+| `--outline-shape <shape>` | Outline corner shape: `round` (default), `square`, or `plus`; `.bmfc` key is `outlineShape` |
 | `--fill-color <color>` | Base glyph fill color as hex `#RRGGBB` or `#RRGGBBAA` (default: FFFFFF, opaque white) |
 | `--gradient <top>,<bottom>` | Vertical gradient with hex colors |
 | `--gradient-angle <degrees>` | Gradient rotation angle |
@@ -461,7 +462,12 @@ kernsmith generate -f font.ttf -s 32 --outline 2
 
 # 3px red outline
 kernsmith generate -f font.ttf -s 32 --outline 3,FF0000
+
+# Square-cornered outline (most visible with --mono)
+kernsmith generate -f font.ttf -s 32 --mono --outline 2 --outline-shape square
 ```
+
+`--outline-shape` picks the outline's corner shape: `round` (default), `square` (diagonals filled), or `plus` (diamond-shaped corners).
 
 ### Gradient
 

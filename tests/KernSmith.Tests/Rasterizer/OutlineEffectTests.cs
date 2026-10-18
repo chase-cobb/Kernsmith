@@ -121,6 +121,80 @@ public class OutlineEffectTests
         a2[(3 - 2) * ow2.Width + (3 - 1)].ShouldBe((byte)0);
     }
 
+    // Single pixel at the center of the 3x3 source; layer is (3 + 2*ow) wide and the pixel sits at (1 + ow).
+    private static byte[] ShapeAlphas(int ow, OutlineShape shape, bool smooth = false)
+    {
+        var metrics = new GlyphMetrics(BearingX: 0, BearingY: 0, Advance: 3, Width: 3, Height: 3);
+        var layer = new OutlineEffect(ow, smooth: smooth, shape: shape).Generate(MakeSinglePixel(), 3, 3, 3, metrics);
+        return LayerAlphas(layer);
+    }
+
+    private static byte AtOffset(byte[] alphas, int ow, int dx, int dy)
+    {
+        var width = 3 + 2 * ow;
+        var c = 1 + ow;
+        return alphas[(c + dy) * width + c + dx];
+    }
+
+    [Fact]
+    public void Generate_NoSmoothing_SquareOw1_FillsAllEightNeighbours()
+    {
+        var a = ShapeAlphas(1, OutlineShape.Square);
+
+        foreach (var (dx, dy) in new[] { (-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1) })
+            AtOffset(a, 1, dx, dy).ShouldBe((byte)255, $"offset ({dx},{dy}) must be filled");
+    }
+
+    [Fact]
+    public void Generate_NoSmoothing_PlusOw1_FillsOnlyFourNeighbours()
+    {
+        var a = ShapeAlphas(1, OutlineShape.Plus);
+
+        foreach (var (dx, dy) in new[] { (0, -1), (-1, 0), (1, 0), (0, 1) })
+            AtOffset(a, 1, dx, dy).ShouldBe((byte)255, $"offset ({dx},{dy}) must be filled");
+        foreach (var (dx, dy) in new[] { (-1, -1), (1, -1), (-1, 1), (1, 1) })
+            AtOffset(a, 1, dx, dy).ShouldBe((byte)0, $"diagonal ({dx},{dy}) must be empty");
+    }
+
+    [Fact]
+    public void Generate_NoSmoothing_SquareOw2_IsAFilledSquare()
+    {
+        var a = ShapeAlphas(2, OutlineShape.Square);
+
+        // Corner (2,2) is inside; the whole 5x5 block is solid.
+        AtOffset(a, 2, 2, 2).ShouldBe((byte)255);
+        AtOffset(a, 2, -2, 2).ShouldBe((byte)255);
+        a.Count(x => x == 255).ShouldBe(25);
+    }
+
+    [Fact]
+    public void Generate_NoSmoothing_PlusOw2_IsADiamond()
+    {
+        var a = ShapeAlphas(2, OutlineShape.Plus);
+
+        AtOffset(a, 2, 1, 1).ShouldBe((byte)255, "|dx|+|dy| == 2 is inside");
+        AtOffset(a, 2, 2, 1).ShouldBe((byte)0, "|dx|+|dy| == 3 is outside");
+        AtOffset(a, 2, 2, 2).ShouldBe((byte)0);
+        a.Count(x => x == 255).ShouldBe(13); // diamond of radius 2
+    }
+
+    [Fact]
+    public void Generate_NoSmoothing_RoundIsDefaultAndUnchanged()
+    {
+        ShapeAlphas(1, OutlineShape.Round).ShouldBe(ShapeAlphas(1, OutlineShape.Round));
+        AtOffset(ShapeAlphas(1, OutlineShape.Round), 1, 1, 1).ShouldBe((byte)0);
+    }
+
+    [Theory]
+    [InlineData(OutlineShape.Square, 1, 1, 127)]  // dist 1 == ow -> same soft-ramp value as Round on axis
+    [InlineData(OutlineShape.Plus, 1, 1, 0)]       // Manhattan 2 > ow + 0.75 -> transparent
+    public void Generate_Smoothing_AppliesShapeMetricToRamp(OutlineShape shape, int dx, int dy, int expected)
+    {
+        var a = ShapeAlphas(1, shape, smooth: true);
+
+        AtOffset(a, 1, dx, dy).ShouldBe((byte)expected);
+    }
+
     [Fact]
     public void Generate_Smoothing_StillUsesSoftRamp()
     {

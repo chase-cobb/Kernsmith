@@ -518,7 +518,7 @@ internal sealed class PreparedRasterization : IDisposable
         if (options.Outline > 0 && !BmFont.ShouldApplyChannelConfig(options))
         {
             effects.Add(new OutlineEffect(options.Outline, options.OutlineR, options.OutlineG, options.OutlineB,
-                smooth: options.AntiAlias != AntiAliasMode.None));
+                smooth: options.AntiAlias != AntiAliasMode.None, shape: options.OutlineShape));
         }
         else if (options.PostProcessors != null)
         {
@@ -527,7 +527,7 @@ internal sealed class PreparedRasterization : IDisposable
                 if (pp is OutlinePostProcessor op && op.OutlineWidth > 0)
                 {
                     effects.Add(new OutlineEffect(op.OutlineWidth, op.OutlineR, op.OutlineG, op.OutlineB,
-                        smooth: op.Smooth && options.AntiAlias != AntiAliasMode.None));
+                        smooth: op.Smooth && options.AntiAlias != AntiAliasMode.None, shape: op.Shape));
                     break;
                 }
             }

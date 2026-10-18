@@ -55,6 +55,7 @@ public class GenerationService
             if (request.OutlineEnabled)
             {
                 options.Outline = request.OutlineWidth;
+                options.OutlineShape = request.OutlineShape;
                 options.OutlineR = request.OutlineColorR;
                 options.OutlineG = request.OutlineColorG;
                 options.OutlineB = request.OutlineColorB;

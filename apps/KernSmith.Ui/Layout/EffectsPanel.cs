@@ -362,6 +362,43 @@ public class EffectsPanel : Panel
         UiFactory.AddColorRow(_graphicsDevice, outlineContent, "Color:",
             _effects.OutlineColor, hex => _effects.OutlineColor = hex);
 
+        var shapeGrid = new Grid();
+        shapeGrid.Visual.WidthUnits = DimensionUnitType.RelativeToParent;
+        shapeGrid.Visual.Width = 0;
+        shapeGrid.Visual.HeightUnits = DimensionUnitType.RelativeToChildren;
+        shapeGrid.Visual.Height = 0;
+        shapeGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        shapeGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(Theme.LabelWidth) });
+        shapeGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        outlineContent.Children.Add(shapeGrid.Visual);
+
+        var shapeLabel = new Label();
+        shapeLabel.Text = "Shape:";
+        shapeGrid.AddChild(shapeLabel, row: 0, column: 0);
+
+        var outlineShapes = new[] { OutlineShape.Round, OutlineShape.Square, OutlineShape.Plus };
+        var shapeCombo = new ComboBox();
+        shapeCombo.ListBox.InnerPanel.UseFixedStackChildrenSize = true;
+        shapeCombo.Width = 100;
+        foreach (var shape in outlineShapes) shapeCombo.Items!.Add(shape.ToString());
+        shapeCombo.SelectedIndex = Array.IndexOf(outlineShapes, _effects.OutlineShape);
+        var updatingShapeFromVm = false;
+        shapeCombo.SelectionChanged += (_, _) =>
+        {
+            if (!updatingShapeFromVm && shapeCombo.SelectedIndex >= 0)
+                _effects.OutlineShape = outlineShapes[shapeCombo.SelectedIndex];
+        };
+        shapeGrid.AddChild(shapeCombo, row: 0, column: 1);
+        TooltipService.SetTooltip(shapeCombo, "Outline corner shape. Round is smooth; Square fills diagonals; Plus is diamond-shaped. Most visible with anti-aliasing off.");
+
+        _effects.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName != nameof(EffectsViewModel.OutlineShape)) return;
+            updatingShapeFromVm = true;
+            try { shapeCombo.SelectedIndex = Array.IndexOf(outlineShapes, _effects.OutlineShape); }
+            finally { updatingShapeFromVm = false; }
+        };
+
         // --- Shadow ---
         var shadowGrid = new PropertyGridVisual { AlternatingRowColorsEnabled = false };
         expander.AddContent(shadowGrid);

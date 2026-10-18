@@ -91,6 +91,7 @@ public class ProjectService
         effects.OutlineEnabled = options.Outline > 0;
         effects.OutlineWidth = options.Outline > 0 ? options.Outline : 1;
         effects.OutlineColor = EffectsViewModel.ToHex(options.OutlineR, options.OutlineG, options.OutlineB);
+        effects.OutlineShape = options.OutlineShape;
         effects.ShadowEnabled = options.ShadowOffsetX != 0 || options.ShadowOffsetY != 0 || options.ShadowBlur != 0;
         effects.ShadowOffsetX = options.ShadowOffsetX;
         effects.ShadowOffsetY = options.ShadowOffsetY;
@@ -173,6 +174,7 @@ public class ProjectService
             EnableHinting = effects.Hinting,
             SuperSampleLevel = effects.SuperSampleLevel,
             Outline = effects.OutlineEnabled ? effects.OutlineWidth : 0,
+            OutlineShape = effects.OutlineShape,
             OutlineR = outlineRgb.R,
             OutlineG = outlineRgb.G,
             OutlineB = outlineRgb.B,

@@ -187,6 +187,11 @@ public sealed class BmFontBuilder
         return this;
     }
 
+    /// <summary>Sets the outline corner shape (round, square, or plus).</summary>
+    /// <param name="shape">Outline shape.</param>
+    /// <returns>This builder.</returns>
+    public BmFontBuilder WithOutlineShape(OutlineShape shape) { _options.OutlineShape = shape; return this; }
+
     /// <summary>If true, generates signed distance field (SDF) output instead of bitmaps.</summary>
     /// <param name="sdf">Enable SDF.</param>
     /// <returns>This builder.</returns>
@@ -455,6 +460,7 @@ public sealed class BmFontBuilder
         _options.OutlineR = source.OutlineR;
         _options.OutlineG = source.OutlineG;
         _options.OutlineB = source.OutlineB;
+        _options.OutlineShape = source.OutlineShape;
         _options.Sdf = source.Sdf;
         _options.PowerOfTwo = source.PowerOfTwo;
         _options.Dpi = source.Dpi;

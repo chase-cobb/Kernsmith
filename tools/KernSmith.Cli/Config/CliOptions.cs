@@ -42,6 +42,7 @@ internal sealed class CliOptions
     // Effects
     public int Outline { get; set; }
     public string? OutlineColor { get; set; }
+    public OutlineShape? OutlineShape { get; set; }
     public string? FillColor { get; set; }
     public string? GradientTop { get; set; }
     public string? GradientBottom { get; set; }

@@ -205,6 +205,7 @@ internal sealed class GenerateCommand
             PackingAlgorithm = options.PackingAlgorithm,
             Kerning = options.Kerning ?? true,
             Outline = options.Outline,
+            OutlineShape = options.OutlineShape ?? KernSmith.OutlineShape.Round,
             Sdf = options.Sdf,
             PowerOfTwo = options.PowerOfTwo ?? true,
             Dpi = options.Dpi,
@@ -510,6 +511,15 @@ internal sealed class GenerateCommand
                         options.Outline = int.Parse(outlineArg);
                     }
                     break;
+                case "--outline-shape":
+                    options.OutlineShape = NextArg(args, ref i, args[i]).ToLowerInvariant() switch
+                    {
+                        "round" => OutlineShape.Round,
+                        "square" => OutlineShape.Square,
+                        "plus" => OutlineShape.Plus,
+                        var s => throw new ArgumentException($"Unknown outline shape: {s}. Use round, square, or plus.")
+                    };
+                    break;
                 case "--gradient":
                     var gradientArg = NextArg(args, ref i, "--gradient");
                     if (gradientArg.Contains(','))
@@ -709,6 +719,7 @@ internal sealed class GenerateCommand
         if (cli.AntiAlias != AntiAliasMode.Grayscale) config.AntiAlias = cli.AntiAlias;
         if (cli.MaxTextureSize != 1024) config.MaxTextureSize = cli.MaxTextureSize;
         if (cli.Outline > 0) { config.Outline = cli.Outline; config.OutlineColor = cli.OutlineColor ?? config.OutlineColor; }
+        if (cli.OutlineShape.HasValue) config.OutlineShape = cli.OutlineShape;
         if (cli.Dpi != 72) config.Dpi = cli.Dpi;
         if (cli.FaceIndex != 0) config.FaceIndex = cli.FaceIndex;
         if (cli.PackingAlgorithm != PackingAlgorithm.MaxRects) config.PackingAlgorithm = cli.PackingAlgorithm;
@@ -829,7 +840,10 @@ internal sealed class GenerateCommand
         if (options.ForceSyntheticItalic) effects.Add("synthetic-italic");
         else if (options.Italic) effects.Add("italic");
         if (options.Sdf) effects.Add("SDF");
-        if (options.Outline > 0) effects.Add($"outline {options.Outline}px");
+        if (options.Outline > 0)
+            effects.Add(options.OutlineShape is { } shape && shape != OutlineShape.Round
+                ? $"outline {options.Outline}px ({shape.ToString().ToLowerInvariant()})"
+                : $"outline {options.Outline}px");
         if (options.GradientTop != null) effects.Add($"gradient {options.GradientTop}->{options.GradientBottom}");
         Console.WriteLine($"[dry-run] Effects:   {(effects.Count > 0 ? string.Join(", ", effects) : "none")}");
 
@@ -965,6 +979,7 @@ internal sealed class GenerateCommand
             Effects:
               --fill-color <color>        Base glyph fill color as hex #RRGGBB or #RRGGBBAA (default: FFFFFF, opaque white)
               --outline <n>[,color]        Outline width in pixels, optional hex color (e.g., --outline 2,FF0000)
+              --outline-shape <shape>     Outline corner shape: round (default), square, or plus
               --gradient <top>,<bottom>   Vertical gradient, colors as hex
               --gradient <top> <bottom>   Vertical gradient (two-argument form)
               --gradient-angle <deg>      Gradient rotation in degrees (default: 90)

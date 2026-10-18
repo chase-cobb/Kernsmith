@@ -269,7 +269,8 @@ public static class BmFont
             {
                 var outlineProcessor = new OutlinePostProcessor(options.Outline, options.OutlineR, options.OutlineG, options.OutlineB)
                 {
-                    Smooth = options.AntiAlias != AntiAliasMode.None
+                    Smooth = options.AntiAlias != AntiAliasMode.None,
+                    Shape = options.OutlineShape
                 };
                 channelOutlineGlyphs = glyphs.Select(g => outlineProcessor.Process(g)).ToList();
             }

@@ -59,6 +59,7 @@ internal static class BmfcWriter
             PackingAlgorithm = options.PackingAlgorithm,
             Kerning = options.Kerning ?? true,
             Outline = options.Outline,
+            OutlineShape = options.OutlineShape ?? KernSmith.OutlineShape.Round,
             Sdf = options.Sdf,
             PowerOfTwo = options.PowerOfTwo ?? true,
             Dpi = options.Dpi,

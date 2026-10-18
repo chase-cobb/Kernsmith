@@ -493,6 +493,17 @@ public sealed class BmfcConfigReaderWriterTests
         result.VariationAxes!["wdth"].ShouldBe(87.5f);
     }
 
+    [Theory]
+    [InlineData(OutlineShape.Square)]
+    [InlineData(OutlineShape.Plus)]
+    public void WriteThenParse_RoundTripsOutlineShape(OutlineShape shape)
+    {
+        var config = BmfcConfig.FromOptions(new FontGeneratorOptions { Outline = 2, OutlineShape = shape });
+
+        BmfcConfigReader.Parse(BmfcConfigWriter.Write(config)).Options
+            .OutlineShape.ShouldBe(shape);
+    }
+
     [Fact]
     public void Write_DefaultsForNewlyPersistedOptions_EmitNothing()
     {
@@ -504,6 +515,7 @@ public sealed class BmfcConfigReaderWriterTests
         text.ShouldNotContain("hardShadow");
         text.ShouldNotContain("variationAxes");
         text.ShouldNotContain("antiAlias=");
+        text.ShouldNotContain("outlineShape");
     }
 
     [Theory]
