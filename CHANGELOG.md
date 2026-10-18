@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.0] - 2026-10-18
+
 ### Added
 
 - `FontGeneratorOptions.OutlineShape` (`Round`, `Square`, `Plus`) and `BmFontBuilder.WithOutlineShape`. `Square` fills diagonals (8-neighbour, Chebyshev distance), `Plus` is 4-neighbour (Manhattan distance), `Round` stays the default. Persisted in `.bmfc` as `outlineShape`. Also available as CLI `--outline-shape <round|square|plus>` and as an outline shape selector in the desktop UI (saved with projects). (#242)
+- `README.md` has a Discord badge and link.
+
+### Fixed
+
+- Windows system font lookup no longer drops parentheses from family names, so fonts like `Mana Seed Title (monospace)` resolve by their exact name. (#243)
 
 ## [0.23.1] - 2026-10-17
 

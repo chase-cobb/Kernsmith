@@ -4,12 +4,14 @@
 
 <p align="center">
   <a href="https://www.nuget.org/packages/KernSmith"><img src="https://img.shields.io/nuget/v/KernSmith.svg" alt="NuGet"></a>
+  <a href="https://discord.gg/wfSetqqg23"><img src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
 </p>
 
 <p align="center">
   <a href="LICENSE">License</a> &middot;
   <a href="CHANGELOG.md">Changelog</a> &middot;
-  <a href="samples/">Samples</a>
+  <a href="samples/">Samples</a> &middot;
+  <a href="https://discord.gg/wfSetqqg23">Discord</a>
 </p>
 
 ## Features
@@ -18,7 +20,7 @@
 - **BMFont output** -- text, XML, and binary `.fnt` formats with `.png` atlas pages
 - **GPOS kerning** -- extracts kerning pairs directly from OpenType GPOS tables
 - **Atlas packing** -- MaxRects (default) and Skyline algorithms with autofit, power-of-two, and non-square texture support
-- **Outline rendering** -- configurable width and color
+- **Outline rendering** -- configurable width, color, and shape (round, square, plus)
 - **Fill color** -- tint the glyph body with a custom RGBA fill color
 - **Gradient fill** -- per-glyph vertical/angled gradients with midpoint, offset, scale, and cyclic control
 - **Drop shadow** -- offset, color, opacity, and two-parameter blur control (kernel size + passes)
@@ -439,6 +441,18 @@ var result = BmFont.Generate("font.ttf", new FontGeneratorOptions
     OutlineR = 255,  // Red outline
     OutlineG = 0,
     OutlineB = 0
+});
+```
+
+With a different corner shape (`Round` is the default; `Square` fills diagonals, `Plus` gives diamond-shaped corners):
+
+```csharp
+var result = BmFont.Generate("font.ttf", new FontGeneratorOptions
+{
+    Size = 48,
+    Characters = CharacterSet.Ascii,
+    Outline = 3,
+    OutlineShape = OutlineShape.Square
 });
 ```
 
