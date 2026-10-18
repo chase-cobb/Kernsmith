@@ -75,6 +75,12 @@ public class FontGeneratorOptions
     /// <summary>Outline thickness in pixels. 0 = no outline.</summary>
     public int Outline { get; set; }
 
+    /// <summary>
+    /// Corner shape of the outline: <see cref="OutlineShape.Round"/> (default), <see cref="OutlineShape.Square"/>
+    /// (8-neighbour) or <see cref="OutlineShape.Plus"/> (4-neighbour). Mostly visible with <see cref="AntiAliasMode.None"/>.
+    /// </summary>
+    public OutlineShape OutlineShape { get; set; } = OutlineShape.Round;
+
     /// <summary>Outline color red channel (default 0 = black).</summary>
     public byte OutlineR { get; set; }
 

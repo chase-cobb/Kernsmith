@@ -20,19 +20,23 @@ internal sealed class OutlineEffect : IGlyphEffect
     private readonly byte _outlineB;
 
     private readonly bool _smooth;
+    private readonly OutlineShape _shape;
 
     /// <summary>
     /// Creates the effect. <paramref name="smooth"/> true gives the soft anti-aliased ring; false
     /// (AntiAlias = None) gives a hard threshold: pixels within <paramref name="outlineWidth"/> of
-    /// the glyph are fully opaque, the rest transparent.
+    /// the glyph are fully opaque, the rest transparent. <paramref name="shape"/> picks the distance
+    /// metric (round, square or plus corners).
     /// </summary>
-    public OutlineEffect(int outlineWidth, byte outlineR = 0, byte outlineG = 0, byte outlineB = 0, bool smooth = true)
+    public OutlineEffect(int outlineWidth, byte outlineR = 0, byte outlineG = 0, byte outlineB = 0, bool smooth = true,
+        OutlineShape shape = OutlineShape.Round)
     {
         _outlineWidth = outlineWidth;
         _outlineR = outlineR;
         _outlineG = outlineG;
         _outlineB = outlineB;
         _smooth = smooth;
+        _shape = shape;
     }
 
     public GlyphLayer Generate(byte[] alphaData, int width, int height, int pitch, GlyphMetrics metrics)
@@ -67,7 +71,7 @@ internal sealed class OutlineEffect : IGlyphEffect
             for (var i = 0; i < size; i++)
                 binaryAlpha[i] = expandedAlpha[i] >= 32 ? (byte)255 : (byte)0;
 
-            var squaredDist = EuclideanDistanceTransform.Compute(binaryAlpha, dstW, dstH);
+            var squaredDist = OutlineDistanceTransform.ComputeSquared(binaryAlpha, dstW, dstH, _shape);
 
             // Step 3: Build RGBA output with outline color and anti-aliased alpha.
             // Two cases per pixel:

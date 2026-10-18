@@ -321,6 +321,14 @@ public static class BmfcConfigReader
                         if (!string.IsNullOrEmpty(value))
                             outlineColor = value;
                         break;
+                    case "outlineShape":
+                        options.OutlineShape = value.ToLowerInvariant() switch
+                        {
+                            "square" => OutlineShape.Square,
+                            "plus" => OutlineShape.Plus,
+                            _ => OutlineShape.Round
+                        };
+                        break;
                     case "useSdf":
                         options.Sdf = value == "1";
                         break;

@@ -23,6 +23,9 @@ public sealed class OutlinePostProcessor : IGlyphPostProcessor
     /// <summary>False when anti-aliasing is off: the outline is a hard 0/255 threshold instead of a soft ramp.</summary>
     internal bool Smooth { get; init; } = true;
 
+    /// <summary>Corner shape (distance metric) of the outline.</summary>
+    internal OutlineShape Shape { get; init; } = OutlineShape.Round;
+
     /// <summary>
     /// Creates an outline effect with the given thickness and color.
     /// </summary>
@@ -82,7 +85,7 @@ public sealed class OutlinePostProcessor : IGlyphPostProcessor
             }
 
             // Step 2: Compute EDT on the expanded alpha.
-            squaredDist = EuclideanDistanceTransform.Compute(expandedAlpha, dstW, dstH);
+            squaredDist = OutlineDistanceTransform.ComputeSquared(expandedAlpha, dstW, dstH, Shape);
         }
         finally
         {
