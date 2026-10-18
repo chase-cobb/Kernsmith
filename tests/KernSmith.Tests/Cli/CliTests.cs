@@ -712,20 +712,20 @@ public class CliTests : IDisposable
 
         var keptConfig = Path.Combine(_tempDir, "kept.bmfc");
         var (keptExit, _, keptErr) = RunCli(
-            "generate", "--config", configPath, "-o", Path.Combine(_tempDir, "kept"), "--save-config", keptConfig);
+            "generate", "--config", configPath, "-f", FontPath, "-o", Path.Combine(_tempDir, "kept"), "--save-config", keptConfig);
         keptExit.ShouldBe(0, $"stderr: {keptErr}");
         File.ReadAllText(keptConfig).ShouldContain("outlineShape=square", Case.Sensitive);
 
         var plusConfig = Path.Combine(_tempDir, "plus.bmfc");
         var (plusExit, _, plusErr) = RunCli(
-            "generate", "--config", configPath, "--outline-shape", "plus",
+            "generate", "--config", configPath, "-f", FontPath, "--outline-shape", "plus",
             "-o", Path.Combine(_tempDir, "plus"), "--save-config", plusConfig);
         plusExit.ShouldBe(0, $"stderr: {plusErr}");
         File.ReadAllText(plusConfig).ShouldContain("outlineShape=plus", Case.Sensitive);
 
         var roundConfig = Path.Combine(_tempDir, "round.bmfc");
         var (roundExit, _, roundErr) = RunCli(
-            "generate", "--config", configPath, "--outline-shape", "round",
+            "generate", "--config", configPath, "-f", FontPath, "--outline-shape", "round",
             "-o", Path.Combine(_tempDir, "round"), "--save-config", roundConfig);
         roundExit.ShouldBe(0, $"stderr: {roundErr}");
         File.ReadAllText(roundConfig).ShouldNotContain("outlineShape");
