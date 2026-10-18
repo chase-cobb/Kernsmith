@@ -728,12 +728,7 @@ public sealed class DefaultSystemFontProvider : ISystemFontProvider
             // Registry entry names are like "Arial (TrueType)", "Arial Bold Italic (TrueType)",
             // or bundled TTC entries like "Batang & BatangChe & Gungsuh & GungsuhChe (TrueType)".
             // Strip the suffix in parentheses to get the font display name(s).
-            string displayPart = name;
-            int parenIndex = name.IndexOf('(');
-            if (parenIndex > 0)
-            {
-                displayPart = name.Substring(0, parenIndex).TrimEnd();
-            }
+            string displayPart = StripRegistryTypeSuffix(name);
 
             // Handle bundled TTC entries with " & " separators.
             // Find the segment that matches our family name. The segment's position
@@ -897,12 +892,7 @@ public sealed class DefaultSystemFontProvider : ISystemFontProvider
                 continue;
 
             // Strip the suffix in parentheses, e.g., "(TrueType)" or "(OpenType)".
-            string displayPart = name;
-            int parenIndex = name.IndexOf('(');
-            if (parenIndex > 0)
-            {
-                displayPart = name.Substring(0, parenIndex).TrimEnd();
-            }
+            string displayPart = StripRegistryTypeSuffix(name);
 
             // Only include TrueType/OpenType fonts (skip bitmap, vector, etc.)
             string ext = Path.GetExtension(fileName);
@@ -948,6 +938,27 @@ public sealed class DefaultSystemFontProvider : ISystemFontProvider
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Strips the trailing font-type suffix from a registry value name, e.g.
+    /// "Arial (TrueType)" becomes "Arial". Only the final parenthesized group is
+    /// removed, so family names that themselves contain parentheses, like
+    /// "Mana Seed Title (monospace) (TrueType)", keep them.
+    /// </summary>
+    internal static string StripRegistryTypeSuffix(string registryName)
+    {
+        string trimmed = registryName.TrimEnd();
+        if (trimmed.EndsWith(')'))
+        {
+            int parenIndex = trimmed.LastIndexOf('(');
+            if (parenIndex > 0)
+            {
+                return trimmed.Substring(0, parenIndex).TrimEnd();
+            }
+        }
+
+        return registryName;
     }
 
     /// <summary>
