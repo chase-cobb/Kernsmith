@@ -33,8 +33,10 @@ internal static class BmfcParser
         var gen = config.Options;
         var options = new CliOptions
         {
-            FontPath = config.FontFile,
-            SystemFontName = config.FontName,
+            // .bmfc files write empty fontName/fontFile keys when unused; an empty string must not
+            // count as a system font, or it wins over the font file at generate time.
+            FontPath = string.IsNullOrEmpty(config.FontFile) ? null : config.FontFile,
+            SystemFontName = string.IsNullOrEmpty(config.FontName) ? null : config.FontName,
             OutputPath = config.OutputPath,
             OutputFormat = config.OutputFormat,
 
