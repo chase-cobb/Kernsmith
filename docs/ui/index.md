@@ -71,6 +71,7 @@ Adds a colored border around each glyph.
 
 - **Width**: 1-10 pixels
 - **Color**: Hex color picker (#RRGGBB)
+- **Shape**: Round (default), Square, or Plus corners
 
 ### Shadow
 

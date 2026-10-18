@@ -32,7 +32,7 @@ dotnet run --project apps/KernSmith.Ui
 
 - Font file loading and system font selection
 - Real-time bitmap font preview, with a sample-text tab and optional auto-regenerate on change
-- Full effects configuration (outline, fill color, gradient, shadow)
+- Full effects configuration (outline with shape selector, fill color, gradient, shadow)
 - SDF (signed distance field) output and variable-font axis controls, where the selected backend supports them
 - Channel packing and a configurable fallback character (per-channel content routing is preserved from a loaded `.bmfc`, but there is no editor for it yet)
 - Advanced effect and rendering options — fill color, two-parameter shadow blur (kernel size + passes), extended gradient (offset, scale, cyclic), gamma correction, SDF spread, and per-glyph horizontal advance adjustment

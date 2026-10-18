@@ -45,6 +45,7 @@ you only set what you need. The fluent [builder](builder.md) sets the same prope
 |----------|------|---------|-------------|
 | `Outline` | `int` | `0` | Outline thickness in pixels. `0` = none. |
 | `OutlineR` / `OutlineG` / `OutlineB` | `byte` | `0` | Outline color channels. |
+| `OutlineShape` | `OutlineShape` | `Round` | Outline corner shape: `Round`, `Square` (diagonals filled), or `Plus` (diamond-shaped corners). |
 
 ## Shadow
 
