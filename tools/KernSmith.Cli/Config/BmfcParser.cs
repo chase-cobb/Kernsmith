@@ -58,6 +58,7 @@ internal static class BmfcParser
 
             // Effects
             Outline = gen.Outline,
+            OutlineShape = gen.OutlineShape,
             GradientAngle = gen.GradientAngle,
             GradientMidpoint = gen.GradientMidpoint,
             GradientOffset = gen.GradientOffset,

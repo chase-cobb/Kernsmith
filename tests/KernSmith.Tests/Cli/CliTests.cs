@@ -650,6 +650,87 @@ public class CliTests : IDisposable
         File.ReadAllText(configPath).ShouldContain("font.size=48");
     }
 
+    // -- --outline-shape --
+
+    [Fact]
+    public void Generate_InvalidOutlineShape_ReturnsError()
+    {
+        var (exitCode, _, stderr) = RunCli(
+            "generate", "-f", FontPath, "-s", "24", "--outline", "2", "--outline-shape", "hexagon");
+
+        exitCode.ShouldBe(1);
+        stderr.ShouldContain("Unknown outline shape: hexagon");
+    }
+
+    [Theory]
+    [InlineData("square")]
+    [InlineData("plus")]
+    public void Init_OutlineShape_WritesOutlineShapeToBmfc(string shape)
+    {
+        var configPath = Path.Combine(_tempDir, "shape.bmfc");
+
+        var (exitCode, _, stderr) = RunCli(
+            "init", "-f", FontPath, "-s", "24", "-c", "A", "--outline", "2", "--outline-shape", shape, "-o", configPath);
+
+        exitCode.ShouldBe(0, $"stderr: {stderr}");
+        File.ReadAllText(configPath).ShouldContain($"outlineShape={shape}", Case.Sensitive);
+    }
+
+    [Fact]
+    public void Generate_OutlineShapeFlag_ReachesGeneratorAndSavedConfig()
+    {
+        var savedConfig = Path.Combine(_tempDir, "saved.bmfc");
+
+        var (exitCode, _, stderr) = RunCli(
+            "generate", "-f", FontPath, "-s", "24", "-c", "A", "--outline", "2", "--outline-shape", "plus",
+            "-o", Path.Combine(_tempDir, "out"), "--save-config", savedConfig);
+
+        exitCode.ShouldBe(0, $"stderr: {stderr}");
+        File.ReadAllText(savedConfig).ShouldContain("outlineShape=plus", Case.Sensitive);
+    }
+
+    [Fact]
+    public void Generate_OutlineShapeFlag_ChangesOutputPixels()
+    {
+        var roundOut = Path.Combine(_tempDir, "round");
+        var squareOut = Path.Combine(_tempDir, "square");
+
+        RunCli("generate", "-f", FontPath, "-s", "24", "-c", "A", "--mono", "--outline", "3",
+            "-o", roundOut).ExitCode.ShouldBe(0);
+        RunCli("generate", "-f", FontPath, "-s", "24", "-c", "A", "--mono", "--outline", "3",
+            "--outline-shape", "square", "-o", squareOut).ExitCode.ShouldBe(0);
+
+        File.ReadAllBytes(squareOut + "_0.png").ShouldNotBe(File.ReadAllBytes(roundOut + "_0.png"));
+    }
+
+    [Fact]
+    public void Generate_ConfigOutlineShape_KeptWhenFlagAbsent_OverriddenWhenFlagGiven()
+    {
+        var configPath = Path.Combine(_tempDir, "base.bmfc");
+        RunCli("init", "-f", FontPath, "-s", "24", "-c", "A", "--outline", "2", "--outline-shape", "square",
+            "-o", configPath).ExitCode.ShouldBe(0);
+
+        var keptConfig = Path.Combine(_tempDir, "kept.bmfc");
+        var (keptExit, _, keptErr) = RunCli(
+            "generate", "--config", configPath, "-o", Path.Combine(_tempDir, "kept"), "--save-config", keptConfig);
+        keptExit.ShouldBe(0, $"stderr: {keptErr}");
+        File.ReadAllText(keptConfig).ShouldContain("outlineShape=square", Case.Sensitive);
+
+        var plusConfig = Path.Combine(_tempDir, "plus.bmfc");
+        var (plusExit, _, plusErr) = RunCli(
+            "generate", "--config", configPath, "--outline-shape", "plus",
+            "-o", Path.Combine(_tempDir, "plus"), "--save-config", plusConfig);
+        plusExit.ShouldBe(0, $"stderr: {plusErr}");
+        File.ReadAllText(plusConfig).ShouldContain("outlineShape=plus", Case.Sensitive);
+
+        var roundConfig = Path.Combine(_tempDir, "round.bmfc");
+        var (roundExit, _, roundErr) = RunCli(
+            "generate", "--config", configPath, "--outline-shape", "round",
+            "-o", Path.Combine(_tempDir, "round"), "--save-config", roundConfig);
+        roundExit.ShouldBe(0, $"stderr: {roundErr}");
+        File.ReadAllText(roundConfig).ShouldNotContain("outlineShape");
+    }
+
     [Fact]
     public void Generate_ConfigHiero_AutoDetectsAndGenerates()
     {

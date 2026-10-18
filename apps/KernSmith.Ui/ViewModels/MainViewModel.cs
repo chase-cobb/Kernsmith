@@ -274,6 +274,7 @@ public class MainViewModel : ViewModel
                 SuperSampleLevel = Effects.SuperSampleLevel,
                 OutlineEnabled = Effects.OutlineEnabled,
                 OutlineWidth = Effects.OutlineWidth,
+                OutlineShape = Effects.OutlineShape,
                 OutlineColorR = outlineRgb.R,
                 OutlineColorG = outlineRgb.G,
                 OutlineColorB = outlineRgb.B,

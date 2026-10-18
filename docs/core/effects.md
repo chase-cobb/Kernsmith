@@ -47,6 +47,8 @@ var result = BmFont.Builder()
     .Build();
 ```
 
+`WithOutlineShape` sets the corner shape: `OutlineShape.Round` (default), `Square` (diagonals filled), or `Plus` (diamond-shaped corners). The difference is mostly visible with `AntiAlias.None`.
+
 ### Shadow
 
 Generates a drop shadow layer behind the glyph. Supports offset, blur (two-pass box blur), configurable color, opacity, and a hard shadow mode that binarizes the alpha before blurring.

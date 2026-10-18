@@ -81,6 +81,8 @@ public record GenerationRequest
     public bool OutlineEnabled { get; init; }
     /// <summary>Outline thickness in pixels. Range: 1..10.</summary>
     public int OutlineWidth { get; init; } = 1;
+    /// <summary>Corner shape of the outline.</summary>
+    public OutlineShape OutlineShape { get; init; } = OutlineShape.Round;
     /// <summary>Outline color red component. Range: 0..255.</summary>
     public byte OutlineColorR { get; init; }
     /// <summary>Outline color green component. Range: 0..255.</summary>

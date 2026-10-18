@@ -79,6 +79,7 @@ static int ShowHelp()
           --spacing <n>                Spacing in pixels (default: 1)
           --sdf                        Enable SDF rendering
           --outline <n>                Outline width in pixels (default: 0)
+          --outline-shape <shape>      Outline corner shape: round (default), square, plus
           --gradient <top>,<bottom>    Vertical gradient (comma or space separated)
           --shadow <x>,<y>,<color>,<blur>  Drop shadow
           --max-texture <n>            Max texture size (default: 1024)

@@ -62,6 +62,7 @@ Call exactly one of these before `Build()`.
 |--------|-------------|
 | `WithOutline(int outline)` | Add a black outline of the given pixel width. |
 | `WithOutline(int width, byte r, byte g = 0, byte b = 0)` | Add a colored outline. |
+| `WithOutlineShape(OutlineShape shape)` | Set the outline corner shape: `Round` (default), `Square`, or `Plus`. |
 | `WithShadow(int offsetX = 2, int offsetY = 2, int blur = 0, (byte R, byte G, byte B)? color = null, float opacity = 1.0f)` | Add a drop shadow. |
 | `WithHardShadow(bool enabled = true)` | Use a hard (binarized) shadow silhouette. |
 | `WithGradient((byte R, byte G, byte B) startColor, (byte R, byte G, byte B) endColor, float angleDegrees = 90f, float midpoint = 0.5f)` | Apply a color gradient across glyphs. |

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `FontGeneratorOptions.OutlineShape` (`Round`, `Square`, `Plus`) and `BmFontBuilder.WithOutlineShape`. `Square` fills diagonals (8-neighbour, Chebyshev distance), `Plus` is 4-neighbour (Manhattan distance), `Round` stays the default. Persisted in `.bmfc` as `outlineShape`. (#242)
+- `FontGeneratorOptions.OutlineShape` (`Round`, `Square`, `Plus`) and `BmFontBuilder.WithOutlineShape`. `Square` fills diagonals (8-neighbour, Chebyshev distance), `Plus` is 4-neighbour (Manhattan distance), `Round` stays the default. Persisted in `.bmfc` as `outlineShape`. Also available as CLI `--outline-shape <round|square|plus>` and as an outline shape selector in the desktop UI (saved with projects). (#242)
 
 ## [0.23.1] - 2026-10-17
 

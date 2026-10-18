@@ -32,6 +32,7 @@ public class EffectsViewModel : ViewModel
     public bool OutlineEnabled { get => Get<bool>(); set => Set(value); }
     public int OutlineWidth { get => Get<int>(); set => Set(value); }
     public string OutlineColor { get => Get<string>(); set => Set(value); }
+    public OutlineShape OutlineShape { get => Get<OutlineShape>(); set => Set(value); }
 
     // Shadow
     public bool ShadowEnabled { get => Get<bool>(); set => Set(value); }
