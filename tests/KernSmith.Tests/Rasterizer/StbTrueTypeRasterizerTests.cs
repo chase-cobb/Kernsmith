@@ -293,6 +293,36 @@ public class StbTrueTypeRasterizerTests : IDisposable
         (wide.Height - narrow.Height).ShouldBe(2 * (16 - 4));
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)] // Bold and Italic take the styled SDF path.
+    [InlineData(false, true)]
+    public void RasterizeGlyph_Sdf_FieldIsHighInsideAndLowOutside(bool bold, bool italic)
+    {
+        _rasterizer = CreateAndLoadRasterizer();
+        var options = new RasterOptions
+        {
+            Size = 32,
+            AntiAlias = AntiAliasMode.Grayscale,
+            Sdf = true,
+            Bold = bold,
+            Italic = italic
+        };
+
+        var glyph = _rasterizer.RasterizeGlyph('l', options);
+
+        glyph.ShouldNotBeNull();
+        // The stem crosses the middle row, so the row's highest value is inside the glyph and
+        // its ends, in the padding, are outside it.
+        int row = glyph.Height / 2;
+        var values = Enumerable.Range(0, glyph.Width)
+            .Select(x => (int)glyph.BitmapData[row * glyph.Pitch + x])
+            .ToList();
+        values.Max().ShouldBeGreaterThan(128);
+        values[0].ShouldBeLessThan(128);
+        values[^1].ShouldBeLessThan(128);
+    }
+
     // -- 16. LoadSystemFont throws NotSupportedException ------------------
 
     [Fact]
