@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The StbTrueType backend honours `SdfSpread`: its distance field falls from 128 on the glyph edge to 0 at the spread, with padding to hold it, as the FreeType backend's does, where it reached about 2 pixels whatever the spread. SDF glyphs from StbTrueType change: at the default spread of 8 the field is a quarter as steep and padded by 8 pixels. (#260)
+
 ## [0.24.0] - 2026-10-18
 
 ### Added
